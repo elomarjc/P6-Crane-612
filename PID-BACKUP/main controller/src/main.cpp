@@ -322,6 +322,8 @@ void readInput() {
         }
     }    
 
+    //Serial.println("RAW POS: (" + String(analogRead(pin_pos_x)) + ", " + String(analogRead(pin_pos_y)) + ")");
+
     in.joystick.x    = keyboard_xPos;          // Reads joystick x-direction
     in.joystick.y    = 1023-keyboard_yPos;     // Reads joystick y-direction
     // in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
@@ -476,7 +478,9 @@ void loop() {
         start_time = 0;
         AutoON=false;
         //Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3));
-        Serial.println("Trolley: (" + String(in.posTrolley.x,3) + ", " + String(in.posTrolley.y,3) + "), " + "Angle: "+ String(in.angle) +  ", " + "Container: (" + String(in.posContainer.x,3) + ", " + String(in.posContainer.y,3) + ")");    
+        //Serial.println("Trolley: (" + String(in.posTrolley.x,3) + ", " + String(in.posTrolley.y,3) + "), " + "Angle: "+ String(in.angle) +  ", " + "Container: (" + String(in.posContainer.x,3) + ", " + String(in.posContainer.y,3) + ")");    
+        
+        //Serial.println("Trolley: (" + String(in.posTrolley.x,3) + ", " + String(in.posTrolley.y,3) + "), " + "Angle: "+ String(in.angle) +  ", " + "Ref: ("+ String(ref.x,3) + ", " + String(ref.y,3) + ")");    
     } 
     // "Ref: ("+ String(ref.x,3) + ", " + String(ref.y,3) + ")"
     // Serial.println(String(tempAngle)+", "+String(in.angle));
