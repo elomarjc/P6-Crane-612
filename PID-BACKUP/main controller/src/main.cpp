@@ -313,14 +313,15 @@ void readInput() {
         }
     }  
     
-    // if the state is 'C0' the MANUAL CONTROL will turn OFF
-    if (state == 'v') {
-        keyboard_ctrlmode_sw = 0;
-        if(flag == 0){
-          Serial.println("MANUAL CONTROL OFF");
-          flag=1;
-        }
-    }    
+    // OBS THIS IS HIGHLY UNSTABLE AND DANGEROUS. DO NOT USE!
+    // // if the state is 'C0' the MANUAL CONTROL will turn OFF
+    // if (state == 'v') {
+    //     keyboard_ctrlmode_sw = 0;
+    //     if(flag == 0){
+    //       Serial.println("MANUAL CONTROL OFF");
+    //       flag=1;
+    //     }
+    // }    
 
     //Serial.println("RAW POS: (" + String(analogRead(pin_pos_x)) + ", " + String(analogRead(pin_pos_y)) + ")");
 
