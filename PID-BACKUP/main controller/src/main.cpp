@@ -19,7 +19,7 @@
 
 // Configuration
 #define SAMPLEHZ 100        // Control loop sample frequency
-//#define USEPATHALGO      // Uncomment if path algorithm is to be used
+#define USEPATHALGO      // Uncomment if path algorithm is to be used
 #define DYNAMICNOTCHFILTER
 
 // x-controller variables
@@ -169,6 +169,10 @@ float wirelengthToFrequency2(float length){
 
 
 float tempAngle;
+float keyboard_xPos = 512;
+float keyboard_yPos = 512;
+bool keyboard_magnet_sw = 0;
+bool keyboard_ctrlmode_sw = 1;
 
 // Function that reads the inputs to the system and makes convertions
 void readInput() {
@@ -205,10 +209,6 @@ void readInput() {
     getSerialReference(&Serial,&ref);
     #endif
 
-    int keyboard_xPos = 512;
-    int keyboard_yPos = 512;
-    int keyboard_magnet_sw = 0;
-    int keyboard_ctrlmode_sw = 1;
 
     //if some date is sent, reads it and saves in state
     
@@ -219,92 +219,109 @@ void readInput() {
       state = Serial.read();
       delay(2);   
       flag=0;
-      Serial.println("Checking for new input.");
+      Serial.println(" ");
+    //   Serial.println("Checking for new input.");
     }   
 
     // if the state is 'w' the DC motor will go UP
-    if (state == 'W') 
+    if (state == 'w') 
     {
-        keyboard_yPos = 0;      //1023 = 5V,     512 = 2,5 V.
+        if (keyboard_magnet_sw==1) 
+        {
+            keyboard_yPos = 220;
+        }
+        else
+        {
+            keyboard_yPos = 320;      //1023 = 5V,     512 = 2,5 V.
+        }
         if(flag == 0){
-          Serial.println("Go UP!");
+          Serial.println("GO UP!");
           flag=1;
         }
     } 
 
      // if the state is 's' the DC motor will go DOWN
-    if (state == 'S') {
-        keyboard_yPos = 750;      //1023 = 5V,     512 = 2,5 V.
+    if (state == 's') {
+        if (keyboard_magnet_sw==1) 
+        {
+            keyboard_yPos = 590;
+        }
+        else
+        {
+            keyboard_yPos = 650;      //1023 = 5V,     512 = 2,5 V.
+        }
         if(flag == 0){
-          Serial.println("Go DOWN!");
+          Serial.println("GO DOWN!");
           flag=1;
         }
     }
 
     // if the state is 'A' the DC motor will go LEFT
-    if (state == 'A') {
-        keyboard_xPos = 200;      //1023 = 5V,     512 = 2,5 V.
+    if (state == 'a') {
+        keyboard_xPos = 380;      //1023 = 5V,     512 = 2,5 V.
         if(flag == 0){
-          Serial.println("Go LEFT!");
+          Serial.println("GO LEFT!");
           flag=1;
         }
     } 
 
      // if the state is 'D' the DC motor will go RIGHT
-    if (state == 'D') {
-        keyboard_xPos = 750;      //1023 = 5V,     512 = 2,5 V.
+    if (state == 'd') {
+        keyboard_xPos = 650;      //1023 = 5V,     512 = 2,5 V.
         if(flag == 0){
-          Serial.println("Go RIGHT!");
+          Serial.println("GO RIGHT!");
           flag=1;
         }
     }
 
     // if the state is 'X' the DC motor will STOP
-    if (state == 'X') {
+    if (state == 'x') {
         keyboard_xPos = 512;      //1023 = 5V,     512 = 2,5 V.
         keyboard_yPos = 512; 
         if(flag == 0){
-          Serial.println("Go RIGHT!");
+          Serial.println("STOP!");
           flag=1;
         }
     }            
 
     // if the state is 'M1' the MAGNET will turn ON
-    if (state == 'M') {
+    if (state == 'm') {
         keyboard_magnet_sw = 1;
+        // Serial3.println("M1");
         if(flag == 0){
-          Serial.println("Go RIGHT!");
+          Serial.println("MAGNET ON!");
           flag=1;
         }
     }
 
     // if the state is 'M0' the MAGNET will turn OFF
-    if (state == 'N') {
+    if (state == 'n') {
         keyboard_magnet_sw = 0;
+        // Serial3.println("M0");
         if(flag == 0){
-          Serial.println("Go RIGHT!");
+          Serial.println("MAGNET OFF!");
           flag=1;
         }
     }
 
     // if the state is 'C1' the MANUAL CONTROL will turn ON
-    if (state == 'C') {
+    if (state == 'c') {
         keyboard_ctrlmode_sw = 1;
         if(flag == 0){
-          Serial.println("Go RIGHT!");
+          Serial.println("MANUAL CONTROL ON");
           flag=1;
         }
     }  
     
     // if the state is 'C0' the MANUAL CONTROL will turn OFF
-    if (state == 'V') {
+    if (state == 'v') {
         keyboard_ctrlmode_sw = 0;
         if(flag == 0){
-          Serial.println("Go RIGHT!");
+          Serial.println("MANUAL CONTROL OFF");
           flag=1;
         }
-    }          
-    
+    }    
+
     in.joystick.x    = keyboard_xPos;          // Reads joystick x-direction
     in.joystick.y    = 1023-keyboard_yPos;     // Reads joystick y-direction
     // in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
@@ -458,8 +475,10 @@ void loop() {
         manualControl(); 
         start_time = 0;
         AutoON=false;
-        // Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3));
-    }
+        //Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3));
+        Serial.println("Trolley: (" + String(in.posTrolley.x,3) + ", " + String(in.posTrolley.y,3) + "), " + "Angle: "+ String(in.angle) +  ", " + "Container: (" + String(in.posContainer.x,3) + ", " + String(in.posContainer.y,3) + ")");    
+    } 
+    // "Ref: ("+ String(ref.x,3) + ", " + String(ref.y,3) + ")"
     // Serial.println(String(tempAngle)+", "+String(in.angle));
 }
 
