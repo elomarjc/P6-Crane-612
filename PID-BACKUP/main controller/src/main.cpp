@@ -12,6 +12,8 @@
 #include "pinDefinitions.h"
 #include "dataStructures.h"
 #include "displayHandler.h"
+#include "pathJacob.h"
+
 
 #define mainprogram
 #ifdef mainprogram
@@ -23,28 +25,28 @@
 #define DYNAMICNOTCHFILTER
 
 // x-controller variables
-#define xOuterP 1.4
-#define xOuterI .75
-#define xOuterD 1.4
+#define xOuterP 0.7
+#define xOuterI 0.35
+#define xOuterD 0.7
 #define xOuterGain 5.5
 
-#define xInnerP 1.5
+#define xInnerP 0.75
 #define xInnerI 0.0
-#define xInnerD 1
+#define xInnerD 0.5
 #define xInnerGain 8
 
 // y-controller variables
-#define yP 150.0
+#define yP 75.0
 #define yI 0.000
-#define yD 75.00
+#define yD 37.5
 #define yLP 0.05
 
-#define noWireP 100
+#define noWireP 50
 #define noWireI 0
-#define noWireD 25
+#define noWireD 12.5
 
 // Controllers on the x-axis
-// lead_lag xOuterController = lead_lag(xOuterZ,xOuterP,xOuterG);
+// lead_lag xOuterController = lead_lag(xOuterZ ,xOuterP,xOuterG);
 PID xOuterController = PID(xOuterP,xOuterI,xOuterD,0.02);
 PID xInnerController = PID(xInnerP, xInnerI, xInnerD, 0.05, false);
 PID noWireController = PID(noWireP,noWireI,noWireD,0.04, false);
@@ -68,8 +70,9 @@ uint32_t screenTimer  = 0;
 uint32_t loopTime     = 0;
 
 #ifdef USEPATHALGO
-QauyToShip testQuayToShip = QauyToShip(pin_magnet_led);
-//QauyToShipV testQuayToShip = QauyToShipV(pin_magnet_led);
+//QauyToShipJacob testQuayToShip = QauyToShipJacob(pin_magnet_led);
+//QauyToShip testQuayToShip = QauyToShip(pin_magnet_led);
+QauyToShipV testQuayToShip = QauyToShipV(pin_magnet_led);
 //ShipToQauy testShipToQuay = ShipToQauy(pin_magnet_led);
 #endif
 
@@ -314,14 +317,15 @@ void readInput() {
     }  
     
     // OBS THIS IS HIGHLY UNSTABLE AND DANGEROUS. DO NOT USE!
-    // // if the state is 'C0' the MANUAL CONTROL will turn OFF
-    // if (state == 'v') {
-    //     keyboard_ctrlmode_sw = 0;
-    //     if(flag == 0){
-    //       Serial.println("MANUAL CONTROL OFF");
-    //       flag=1;
-    //     }
-    // }    
+    // if the state is 'C0' the MANUAL CONTROL will turn OFF
+    // and the AUTOMATIC CONTROLL will turn ON
+    if (state == 'v') {
+        keyboard_ctrlmode_sw = 0;
+        if(flag == 0){
+          Serial.println("AUTOMATIC CONTROL ON");
+          flag=1;
+        }
+    }    
 
     //Serial.println("RAW POS: (" + String(analogRead(pin_pos_x)) + ", " + String(analogRead(pin_pos_y)) + ")");
 
@@ -363,9 +367,9 @@ void manualControl() {
     digitalWrite(pin_ctrlmode_led,HIGH);
 
     // Calculates actuations based on joystick and trolley position
-    pwm.x = endstop(map(in.joystick.x,0,1023,255*0.1,255*0.9), 0.10, 3.95, in.posTrolley.x);
-    pwm.y = endstop(map(in.joystick.y,0,1023,255*0.1,255*0.9), -0.01, 1.23, in.posTrolley.y);
-    
+    pwm.x = endstop(map(in.joystick.x,0,1023,255*0.1,255*0.9), 0.500, 4.345, in.posTrolley.x);
+    pwm.y = endstop(map(in.joystick.y,0,1023,255*0.1,255*0.9), 0.300, 1.30, in.posTrolley.y);
+
     // Sends pwm signals to motor driver x
     // if joystick is not in middle position
     if (joystickDeadZone(in.joystick.x) == 1) {
@@ -386,12 +390,57 @@ void manualControl() {
         digitalWrite(pin_enable_y, LOW);
     }
 
-    // Turns on LED and magnet when magnet switch is active
-    if (in.magnetSw == 1) {
-        turnOnElectromagnet(true, pin_magnet_led);
-    } else {
-        turnOnElectromagnet(false, pin_magnet_led);
+    Serial.println("Millis: "+String(millis())+ ", PosTrolley X:" + String(in.posTrolley.x,3) + ",  PosTrolley Y:" + String(in.posTrolley.y,3) + ", Angle:" +String(in.angle) + "PWM X:" + String(pwm.x)+ "PWM Y:" + String(pwm.y));
+    
+    // // Turns on LED and magnet when magnet switch is active
+    // if (in.magnetSw == 1) {
+    //     turnOnElectromagnet(true, pin_magnet_led);
+    // } else {
+    //     turnOnElectromagnet(false, pin_magnet_led);
+    // }
+}
+
+// Automatic control
+void autoJacob() {
+    //Define enable value for x-axis motor
+    bool enableXmotor = true;
+
+    #ifdef USEPATHALGO
+    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning, &noWireControllerOff);
+    //testShipToQuay.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning, &InnnerLoopOn);
+    #endif
+
+    double xConOut=0;
+    // X-controller
+    if(noWireControllerOff==false){     
+        xConOut = noWireController.update(ref.x-in.posTrolley.x,Ts);
     }
+    else{
+        double xInnerConOut = xInnerController.update(-in.angle*PI/180,Ts)*xInnerGain;
+        double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, Ts)*xOuterGain;
+        xConOut             = xOuterConOut-xInnerConOut;
+    }
+    
+    double yConOut = yController.update(ref.y-in.posTrolley.y,Ts);
+
+    // Make current to pwm conversion. This also removes friction in the system
+    uint8_t pwmx = currentToPwmX(xConOut, in.velTrolley.x, &enableXmotor);
+    uint8_t pwmy = currentToPwmY(yConOut, in.velTrolley.y, in.magnetSw);
+    
+    // Definere software endstops
+    pwm.x = endstop(pwmx, 0.500, 4.345, in.posTrolley.x);  //0 og 4
+    pwm.y = endstop(pwmy, 0.300, 1.90, in.posTrolley.y);   //1.30 er oppe og 0.410 = lig under contatiner.
+
+    // Outputs the PWM signal
+    digitalWrite(pin_enable_x, enableXmotor);
+    analogWrite(pin_pwm_x,pwm.x);
+
+    digitalWrite(pin_enable_y,HIGH);
+    analogWrite(pin_pwm_y,pwm.y);
+
+    //Serial.println("Millis: "+String(millis())+ ", PosTrolley X:" + String(in.posTrolley.x,3) + ", PosContainer X:" + String(in.posContainer.x,3) + ",  PosTrolley Y:" + String(in.posTrolley.y,3) + ", Angle:" +String(in.angle) +  ", Ref X:"+ String(ref.x,3) + ", xConOut: " + String(xConOut,3) );
+    //Serial.println(String(millis())+ ", " + String(in.posTrolley.y) + "," + String(in.velTrolley.y));
+    
 }
 
 // Automatic control
@@ -424,10 +473,11 @@ void automaticControl() {
     // Make current to pwm conversion. This also removes friction in the system
     uint8_t pwmx = currentToPwmX(xConOut, in.velTrolley.x, &enableXmotor);
     uint8_t pwmy = currentToPwmY(yConOut, in.velTrolley.y, in.magnetSw);
-    
+
     // Definere software endstops
-    pwm.x = endstop(pwmx, 0.1, 3.95, in.posTrolley.x);
-    pwm.y = endstop(pwmy, -0.01, 1.30, in.posTrolley.y);
+    pwm.x = endstop(pwmx, 0.500, 4.345, in.posTrolley.x);  //0 og 4
+    pwm.y = endstop(pwmy, 0.300, 1.431, in.posTrolley.y);   //1.30 er oppe og 0.410 = lig under contatiner.
+
 
     // Outputs the PWM signal
     digitalWrite(pin_enable_x, enableXmotor);
@@ -436,6 +486,7 @@ void automaticControl() {
     digitalWrite(pin_enable_y,HIGH);
     analogWrite(pin_pwm_y,pwm.y);
 
+    Serial.println("Millis: "+String(millis())+ ", PosTrolley X:" + String(in.posTrolley.x,3) + ",  PosTrolley Y:" + String(in.posTrolley.y,3) + ", Angle:" +String(in.angle) + ", PWM X:" + String(pwm.x)+ ", PWM Y:" + String(pwm.y));
     //Serial.println("Millis: "+String(millis())+ ", PosTrolley X:" + String(in.posTrolley.x,3) + ", PosContainer X:" + String(in.posContainer.x,3) + ",  PosTrolley Y:" + String(in.posTrolley.y,3) + ", Angle:" +String(in.angle) +  ", Ref X:"+ String(ref.x,3) + ", xConOut: " + String(xConOut,3) );
     //Serial.println(String(millis())+ ", " + String(in.posTrolley.y) + "," + String(in.velTrolley.y));
     
@@ -472,6 +523,8 @@ void loop() {
             Serial.println("//con restarted"); 
         }
         automaticControl();
+        // autoJacob();
+        
         // Serial.println(String(xtime)+ ", " + String(in.posTrolley.x)+ ", " + String(in.posTrolley.y) + "," +String(in.angle) +  ","+ String(ref.x) + ", " + String(ref.y) + ", " + String(xInnerController) + ", " + String(xOuterController));
 
     } else {
