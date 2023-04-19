@@ -44,9 +44,9 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
     //Lower head onto container
     if(step==2){
         Serial.println("Step = 2, lower head onto container");
-        ref->y = 1.23;
+        ref->y = 1.23;   //1.23
         *innnerLoopOn = false;
-        if(yPos<1.21){
+        if(yPos<1.21){  
             failTime = millis();
         } else if (millis() > failTime+400) {
             step=4;
@@ -111,6 +111,8 @@ ShipToQauy::ShipToQauy(int electroMagnetLED){
 void ShipToQauy::update(float xPos, float yPos, xy_float *ref, float xContainer, float containerSpeed,  bool *pathRunning, bool *innerLoopOn){
     
     //Before start
+
+    
     if(step==0) {    
         //If at start position
         if(3.90<xPos && xPos<4.05 && -0.05<yPos && yPos<0.05){

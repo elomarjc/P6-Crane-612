@@ -49,7 +49,7 @@ uint8_t currentToPwmY(double current, float ySpeed, bool magnetSw) {
     }
 
     // Set max speed
-    if(abs(ySpeed)>0.55){
+    if(abs(ySpeed)>0.55){  // 0.55
         current = 0; 
     }
 
