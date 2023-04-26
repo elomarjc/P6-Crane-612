@@ -11,4 +11,6 @@ C:\Users\andre\OneDrive\ -\ Aalborg\ Universitet\_Universitet\EIT6\_P6\Github\P6
  C:\Users\andre\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.5\cores\arduino/USBAPI.h \
  C:\Users\andre\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.5\cores\arduino/Arduino.h \
  C:\Users\andre\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.5\variants\mega/pins_arduino.h \
- C:\Users\andre\OneDrive\ -\ Aalborg\ Universitet\_Universitet\EIT6\_P6\Github\P6-Crane-612\Testing-Phase\pinDefinitions.h
+ C:\Users\andre\OneDrive\ -\ Aalborg\ Universitet\_Universitet\EIT6\_P6\Github\P6-Crane-612\output\sketch\pinDefinitions.h \
+ C:\Users\andre\OneDrive\ -\ Aalborg\ Universitet\_Universitet\EIT6\_P6\Github\P6-Crane-612\output\sketch\functions.h \
+ C:\Users\andre\OneDrive\ -\ Aalborg\ Universitet\_Universitet\EIT6\_P6\Github\P6-Crane-612\output\sketch\dataStructures.h
