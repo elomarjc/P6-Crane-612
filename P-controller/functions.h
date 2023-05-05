@@ -1,4 +1,3 @@
-#line 1 "C:\\Users\\andre\\OneDrive - Aalborg Universitet\\_Universitet\\EIT6\\_P6\\Github\\P6-Crane-612\\P-controller\\functions.h"
 #ifndef manuelFunctions_h
 #define manuelFunctions_h
 

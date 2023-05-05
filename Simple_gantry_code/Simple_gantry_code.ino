@@ -12,15 +12,15 @@ int time = millis();
 // define these based on values given in positionalValues()
 int minX = 132; // left
 int maxX = 951; // right
-int minY = 61;  // ceiling
-int maxY = 937; // floor
+int minY = 4; // ceiling
+int maxY = 873; // floor
 
 void setVelocityX(float velocity) // [0.1; 0.9], <0.5 to the left, >0.5 to the right, =0.5 stand still, speed is determined as difference between 0.5 and given value
 {
   analogWrite(pin_pwm_x, 255 * velocity);
 }
 
-void setVelocityY(float velocity) // [0.1; 0.9], <0.5 up?, >0.5 down?, =0.5 stand still, speed is determined as difference between 0.5 and given value
+void setVelocityY(float velocity) // [0.1; 0.9], <0.5 down, >0.5 up, =0.5 stand still, speed is determined as difference between 0.5 and given value
 {
   analogWrite(pin_pwm_y, 255 * velocity);
 }
@@ -96,7 +96,7 @@ void verifyPositionX()
 void verifyPositionY()
 {
   digitalWrite(pin_enable_y, HIGH);
-  setVelocityY(0.25);
+  setVelocityY(0.10);
 
   int currentPos = map(analogRead(pin_pos_y), minY, maxY, 0, 133); // [cm]
   Serial.println(currentPos);
@@ -116,8 +116,9 @@ void angleCorrection()
 {
   Serial.println("--- Correcting angle ---");
   float angleSum = 0;
+  int n = 1000;
   int i = 0;
-  while (i < 100)
+  while (i < n)
   {
     if (Serial3.available() && Serial3.read() == '\n')
     {
@@ -126,7 +127,7 @@ void angleCorrection()
       i++;
     }
   }
-  angleOffset = angleSum / 100;
+  angleOffset = angleSum / n;
   Serial.print("Angle offset: ");
   Serial.println(angleOffset);
 }
@@ -135,7 +136,7 @@ void setup()
 {
   Serial.begin(9600);  // communication with microcontroller
   Serial3.begin(9600); // communication with head (the error is ok if the program will compile)
-  delay(1000);        // giving the microcontroller time to fully start
+  delay(1000);         // giving the microcontroller time to fully start
   Serial.println("--- Starting Gantry Crane ---");
   pinMode(pin_enable_x, OUTPUT);
   pinMode(pin_pwm_x, OUTPUT);
@@ -145,19 +146,19 @@ void setup()
   pinMode(pin_pos_y, INPUT);
   setVelocityX(0.5);
   setVelocityY(0.5);
-  angleCorrection();
+  // angleCorrection();
   time = millis();
   Serial.println(time);
 }
 
 void loop()
 {
-  // verifyPositionX();
   positionalValues();
+  // verifyPositionY();
+  // getAngleFromHead();
   // Serial.println(map(analogRead(pin_pos_y), minY, maxY, 0, 133));
   // delay(1000);
-  // while (time + 3000 < millis())
+  // while (time + 10000 < millis())
   // {
-  //   digitalWrite(pin_enable_x, LOW);
   // }
 }
