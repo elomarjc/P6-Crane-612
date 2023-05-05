@@ -225,7 +225,7 @@ void automatic()
   double XconOut = xPid.update(xRef - xContainer);               // Controllers
   double YconOut = yPid.update(yRef - yPos);
 
-  uint8_t pwmx = (currentToPwm(XconOut, 23.5, 0);
+  uint8_t pwmx = (currentToPwm(XconOut, 23.5, 0));
   uint8_t pwmy = pwmLinY(currentToPwm(YconOut, 20, 0));
   pwmX = endstop(pwmx, 0.2, 3.8, xPos);
   pwmY = endstop(pwmy, 0.1, 1.25, yPos);
