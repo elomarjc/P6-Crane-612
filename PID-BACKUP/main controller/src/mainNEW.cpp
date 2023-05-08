@@ -33,7 +33,7 @@ double Kp_y = 9.68,
        kg_x = 1,
        
        Kp_theta = 1,
-       Ki_theta = 0, 
+       Ki_theta = 1, 
        Kd_theta = 0, 
        kg_theta = 1;
 
@@ -42,8 +42,6 @@ PID_v1 xPID(&Input_x, &Output_x, &Setpoint_x, Kp_x*kg_x, Ki_x*kg_x, Kd_x*kg_x, D
 PID_v1 thetaPID(&Input_theta, &Output_theta, &Setpoint_theta, Kp_theta*kg_theta, Ki_theta*kg_theta, Kd_theta*kg_theta, DIRECT);
 
 float angleOffset = 0;
-int step = 0;
-
 
 float getAngleFromHead()
 {
@@ -122,7 +120,7 @@ void setup()
     Input_x = analogRead(pin_pos_x);
 
     Setpoint_y = 400;
-    Setpoint_x = 600;
+    Setpoint_x = 300;
     Setpoint_theta = 100;
     
     yPID.SetSampleTime(10);
@@ -159,7 +157,7 @@ void loop()
 
     if(Setpoint_x-range <= Input_x && Input_x <= Setpoint_x+range) {
       analogWrite(pin_pwm_x, Output_theta);    // angle 
-      Serial.println("IF ONLY ANGLE WORKED");
+      //Serial.println("IF ONLY ANGLE WORKED");
     }
     
 
