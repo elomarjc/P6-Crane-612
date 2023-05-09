@@ -12,7 +12,10 @@ int time = millis();
 void setup() {
   Serial.begin(9600); // communication with microcontroller //// MAY NEED TO BE 9600 ////
   Serial3.begin(9600); // communication with head (the error is ok if the program will compile)
-  delay(1000); // giving the microcontroller time to fully start
+  while (!Serial) { // empty while loop while waiting for Serial-port to open
+  }
+  while (!Serial3) { // empty while loop while waiting for Serial3-port to open
+  }
   Serial.println("--- Starting Gantry Crane ---");
   pinMode(8 /* Enable driver x*/, 0x1);
   pinMode(10 /* PWM pin driver x*/, 0x1);
@@ -28,8 +31,17 @@ void setup() {
   endPoint = 0.5;
   // Serial.println("now");
   // delay(10000);
+
+
+
+  //// KODE TIL TEST ////
+  // sæt kranhoved i 0
+  // endpoint er 1 meter
+  delay(10000);
+  Serial.println("Starting test");
   time = millis();
   Serial.println(time);
+  // husk at Serial.println() position
 }
 
 void loop() {
@@ -46,6 +58,7 @@ void loop() {
 
   // if (errorY(endPoint) * K_p)
 
+  //// NEW AND IMPROVED P-CONTROLLER ////
   if (0.1 < goodMap(errorY(endPoint) * K_p, -1.33, 1.33, 0.1, 0.9) && goodMap(errorY(endPoint) * K_p, -1.33, 1.33, 0.1, 0.9) < 0.9) {
     // setVelocityY(0.50 + errorY(endPoint) * K_p);
     setVelocityY(goodMap(errorY(endPoint) * K_p, -1.33, 1.33, 0.1, 0.9));

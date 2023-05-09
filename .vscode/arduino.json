@@ -1,7 +1,6 @@
 {
     "configuration": "cpu=atmega2560",
     "board": "arduino:avr:mega",
-    "sketch": "P-controller\\P-controller.ino",
-    "port": "COM5",
-    "output": "output"
+    "sketch": "Testing-Phase/Basic-Motor-Test/Basic-Motor-Test.ino",
+    "port": "/dev/tty.usbmodem14201"
 }
