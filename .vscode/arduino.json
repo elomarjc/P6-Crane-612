@@ -1,6 +1,6 @@
 {
     "configuration": "cpu=atmega2560",
     "board": "arduino:avr:mega",
-    "sketch": "Testing-Phase/Basic-Motor-Test/Basic-Motor-Test.ino",
-    "port": "/dev/tty.usbmodem14201"
+    "port": "/dev/tty.usbmodem14201",
+    "sketch": "Testing-Phase/PID-Controller/PID-Controller.ino"
 }

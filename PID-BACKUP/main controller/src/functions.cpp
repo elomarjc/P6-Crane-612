@@ -48,8 +48,8 @@ uint8_t currentToPwmY(double current, float ySpeed, bool magnetSw) {
         current = current + coulombFriction; // Columb friction current
     }
 
-    // Set max speed
-    if(abs(ySpeed)>0.55){
+    // Set max speed for Y-axis
+    if(abs(ySpeed)>0.55){  // 0.55
         current = 0; 
     }
 
@@ -69,10 +69,18 @@ uint8_t currentToPwmY(double current, float ySpeed, bool magnetSw) {
     
     // Linear current -> pwm conversion
     float pwm = 10.2*current+127.5;
+
+    // // Limit the PWM value to the valid range
+    // if (pwm > 255*0.7) {
+    //     pwm = 255*0.7;
+    // } else if (pwm < 255*0.3) {
+    //     pwm = 255*0.3;
+    // }
     return (uint8_t)pwm;
 }
 
 uint8_t currentToPwmX(double current, float xSpeed, bool* enableXMotor){
+        
         if (abs(current) < 0.3){ //This number can be set to something larger than 0 if no movement is wanted for small currents
             current = 0;
             *enableXMotor = false;
@@ -84,15 +92,27 @@ uint8_t currentToPwmX(double current, float xSpeed, bool* enableXMotor){
             *enableXMotor = true;
         }
 
+        // // Set max speed for X-axis
+        // if(abs(xSpeed)>0.55){  // 0.55
+        //     current = 0; 
+        // }
+
         if(current > 10){
             current = 10;
         }
         if(current < -10){
             current = -10;
         }
-    
+        
         // Linear current -> pwm conversion
-        float pwm = 10.2*current+127.5;
+        float pwm = 10.2*current+127.5;  // if max current for motor is 10 amps, the corres. PWM value is 10.2 * 10 + 127.5 = 229.5, which is approximately 90% duty cycle.
+        
+        // if (pwm > 255*0.7) {
+        //     pwm = 255*0.7;
+        // } else if (pwm < 255*0.3) {
+        //     pwm = 255*0.3;
+        // }
+        
         return (uint8_t)pwm;
 }
 
