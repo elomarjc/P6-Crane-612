@@ -531,8 +531,7 @@
                 "__ATOMIC_RELEASE=3",
                 "__BUILTIN_AVR_FMUL=1",
                 "USBCON"
-            ],
-            "compileCommands": "C:/Users/andre/OneDrive - Aalborg Universitet/_Universitet/EIT6/_P6/Github/P6-Crane-612/output/compile_commands.json"
+            ]
         }
     ]
 }
