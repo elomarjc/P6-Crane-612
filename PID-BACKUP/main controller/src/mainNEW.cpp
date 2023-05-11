@@ -22,24 +22,24 @@ double Setpoint_y, Input_y, Output_y,
        Setpoint_theta, Input_theta, Output_theta;
 
 // Specify the links and initial tuning parameters
-double Kp_y = 9.68,
+double Kp_y = 32.4,
        Ki_y = 0,     
-       Kd_y = 0,     
+       Kd_y = 12.96,     
        kg_y = 1,
 
-       Kp_x = 9.68,
+       Kp_x = 2.4,
        Ki_x = 0,
-       Kd_x = 0,
+       Kd_x = 1.92,
        kg_x = 1,
        
-       Kp_theta = 1,
-       Ki_theta = 1, 
-       Kd_theta = 0, 
+       Kp_theta = 22.6,
+       Ki_theta = 0, 
+       Kd_theta = 11.3, 
        kg_theta = 1;
 
 PID_v1 yPID(&Input_y, &Output_y, &Setpoint_y, Kp_y*kg_y, Ki_y*kg_y, Kd_y*kg_y, DIRECT);
 PID_v1 xPID(&Input_x, &Output_x, &Setpoint_x, Kp_x*kg_x, Ki_x*kg_x, Kd_x*kg_x, DIRECT);
-PID_v1 thetaPID(&Input_theta, &Output_theta, &Setpoint_theta, Kp_theta*kg_theta, Ki_theta*kg_theta, Kd_theta*kg_theta, DIRECT);
+PID_v1 thetaPID(&Input_theta, &Output_theta, &Setpoint_theta, Kp_theta*kg_theta, Ki_theta*kg_theta, Kd_theta*kg_theta, REVERSE);
 
 float angleOffset = 0;
 
@@ -81,7 +81,7 @@ void readInput() {
     Input_y = analogRead(pin_pos_y); // 1.3-(0.0015*analogRead(pin_pos_y)-0.17)
     Input_x = analogRead(pin_pos_x);
     
-    Input_theta = getAngleFromHead()*(-1);
+    Input_theta = getAngleFromHead();
     
     //Sanity check angle data
     while(Input_theta > 90 || Input_theta < -90) 
@@ -89,16 +89,8 @@ void readInput() {
     digitalWrite(pin_enable_x, LOW);        //Stop motors!
     digitalWrite(pin_enable_y,LOW);
     Serial.println("//Insane angle data");
-    Input_theta = getAngleFromHead()*(-1);
+    Input_theta = getAngleFromHead();
     }
-
-    // //Sanity check angle data
-    // while(abs(Input_theta) < 1) 
-    // {
-    // Input_theta = 0; 
-    // Input_theta = getAngleFromHead()*(-1);
-    // }
-
 }
 
 void setup()
@@ -121,7 +113,7 @@ void setup()
 
     Setpoint_y = 400;
     Setpoint_x = 300;
-    Setpoint_theta = 100;
+    Setpoint_theta = 0;
     
     yPID.SetSampleTime(10);
     xPID.SetSampleTime(10);
@@ -137,7 +129,7 @@ void setup()
     thetaPID.SetMode(AUTOMATIC);
     //angleCorrection();
     digitalWrite(pin_enable_x, HIGH);
-    Serial.println("high setup");
+    // Serial.println("high setup");
 }
 
 void loop()
@@ -147,18 +139,18 @@ void loop()
     xPID.Compute();
     thetaPID.Compute();
 
-    Serial.println("LOOPING");
+    // Serial.println("LOOPING");
     digitalWrite(pin_enable_y, HIGH);
     digitalWrite(pin_enable_x, HIGH);
     analogWrite(pin_pwm_y, Output_y);
-    analogWrite(pin_pwm_x, Output_x);
+    analogWrite(pin_pwm_x, Output_x-Output_theta);
 
-    int range = 25;
+    // int range = 25;
 
-    if(Setpoint_x-range <= Input_x && Input_x <= Setpoint_x+range) {
-      analogWrite(pin_pwm_x, Output_theta);    // angle 
-      //Serial.println("IF ONLY ANGLE WORKED");
-    }
+    // if(Setpoint_x-range <= Input_x && Input_x <= Setpoint_x+range) {
+    //   analogWrite(pin_pwm_x, Output_theta);    // angle 
+    //   //Serial.println("IF ONLY ANGLE WORKED");
+    // }
     
 
     //Serial.println("PID Input_y: " + String(Input_y) + " PID Set point: " + String(Setpoint_y) + " PID Output_y: " + String(Output_y));
