@@ -19,7 +19,7 @@ double Setpoint_y, Input_y, Output_y,
 double Kp_y = 32.4, Ki_y = 0, Kd_y = 12.96,  // Kd_y = 12.96
                                              // Kp_x = 1, Ki_x = 3, Kd_x = 5,
        Kp_x = 2.4, Ki_x = 0, Kd_x = 1.92, //Kd_x = 1.92,
-       Kp_theta = 11.3, Ki_theta = 0, Kd_theta = 22.6; //Kp_theta = 22.6, Ki_theta = 0, Kd_theta = 11.3;
+       Kp_theta = 11.3, Ki_theta = 0, Kd_theta = 22.6; //Kp_theta = 22.6, Ki_theta = 0, Kd_theta = 11.3; Kp_theta = 11.3, Ki_theta = 0, Kd_theta = 22.6;
 
 double minPWMy_up = 0.33, minPWMy_down = 0.54,
        minPWMx_left = 0.58, minPWMx_right = 0.42;
@@ -66,6 +66,7 @@ float getAngleFromHead() {
   if (Serial3.available() > 0) {
     String angleData = Serial3.readStringUntil('\n');
     angle = angleData.toFloat() - angleOffset;
+    // angle = angle*3.141592/180; // converting angle from [deg] to [rad]
     // Serial.println(angle);
   }
   return angle;

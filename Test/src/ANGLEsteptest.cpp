@@ -55,7 +55,7 @@
 //   time = millis();
 //   unsigned long timeChange = (time - lastTime);
 //   if (timeChange >= min(sampletimeXY,sampletimeTHETA)) {
-//     readInput();
+//     Input_theta = getAngleFromHead();
 //     // xPID.Compute();
 //     thetaPID.Compute();
 //     analogWrite(pin_pwm_x, Output_theta);

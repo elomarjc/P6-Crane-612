@@ -55,58 +55,60 @@ void loop() {
   if (time - lastTimeTHETA >= sampletimeTHETA) {
     Input_theta = getAngleFromHead();
     thetaPID.Compute();
-    //     double errorTHETA = Setpoint_theta - Input_theta;
+    double errorTHETA = Setpoint_theta - Input_theta;
 
-    //     if (errorTHETA > 0) {                                                                     // going right, PWM<0.5
-    //       analogWrite(pin_pwm_x, min(Output_x * 255 - abs(0.5 - minPWMx_right), 0.9 * 255));  //(0.6 - 0.5) * 255 + Output_y * 255);
-    //       // Serial.println(min((minPWMx_left - 0.5) * 255 + Output_x * 255, 0.9 * 255));
-    //       // Serial.println((minPWMx_left - 0.5) * 255 + Output_x * 255);
-    //       // Serial.println((minPWMx_left - 0.5) * 255 + String("\t") + Output_x * 255);
-    //       // Serial.println(minPWMx_left - 0.5);
-    //     } else if (errorTHETA < 0) {                                                             // going left, PWM>0.5
-    //       analogWrite(pin_pwm_x, max(Output_x * 255 + abs(0.5 - minPWMx_left), 0.1 * 255));  //(0.39 - 0.5) * 255 + Output_y * 255);
-    //       // Serial.println(max((minPWMx_right - 0.5) * 255 + Output_x * 255, 0.1 * 255));
-    //       // Serial.println((minPWMx_right - 0.5) * 255 + Output_x * 255);
-    //       // Serial.println((minPWMx_right - 0.5) * 255 + String("\t") + Output_x * 255);
-    //       // Serial.println(minPWMx_right - 0.5);
-    //     }
-
-    //     analogWrite(pin_pwm_x, Output_theta * 255);
-
-    //     // Serial.println("Input_y: " + String(Input_y) +
-    //     //                ", Setpoint_y: " + String(Setpoint_y) + ",Output_y: " + String(Output_y) +
-    //     //                ", Input_y in meters: " + String((double)map(Input_y, minY, maxY, 0, 133) / 100) +
-    //     //                ", Setpoint_y in meters: " + String((double)map(Setpoint_y, minY, maxY, 0, 133) / 100));
-    //     lastTimeTHETA = time;
-  }
-
-  if (time - lastTimeXY >= sampletimeXY) {
-    Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
-    xPID.Compute();
-    double errorX = Setpoint_x - Input_x;
-
-    // (Output_x-0.5)+(Output_theta-0.5)
-
-    if (errorX > 0) {                                                                                                          // going right, PWM<0.5
-      analogWrite(pin_pwm_x, min((Output_x - 0.5) * 255 + (Output_theta - 0.5) * 255 - abs(0.5 - minPWMx_right), 0.9 * 255));  //(0.6 - 0.5) * 255 + Output_y * 255);
+    if (-1 < errorTHETA && errorTHETA < 1) {
+      analogWrite(pin_pwm_x, 0.5 * 255);
+    } else if (errorTHETA > 1) {                                                              // going right, PWM<0.5
+      analogWrite(pin_pwm_x, min(Output_theta * 255 - abs(0.5 - minPWMx_right), 0.9 * 255));  //(0.6 - 0.5) * 255 + Output_y * 255);
       // Serial.println(min((minPWMx_left - 0.5) * 255 + Output_x * 255, 0.9 * 255));
       // Serial.println((minPWMx_left - 0.5) * 255 + Output_x * 255);
       // Serial.println((minPWMx_left - 0.5) * 255 + String("\t") + Output_x * 255);
       // Serial.println(minPWMx_left - 0.5);
-    } else if (errorX < 0) {                                                                                                  // going left, PWM>0.5
-      analogWrite(pin_pwm_x, max((Output_x - 0.5) * 255 + (Output_theta - 0.5) * 255 + abs(0.5 - minPWMx_left), 0.1 * 255));  //(0.39 - 0.5) * 255 + Output_y * 255);
+    } else if (errorTHETA < -1) {                                                            // going left, PWM>0.5
+      analogWrite(pin_pwm_x, max(Output_theta * 255 + abs(0.5 - minPWMx_left), 0.1 * 255));  //(0.39 - 0.5) * 255 + Output_y * 255);
       // Serial.println(max((minPWMx_right - 0.5) * 255 + Output_x * 255, 0.1 * 255));
       // Serial.println((minPWMx_right - 0.5) * 255 + Output_x * 255);
       // Serial.println((minPWMx_right - 0.5) * 255 + String("\t") + Output_x * 255);
       // Serial.println(minPWMx_right - 0.5);
     }
 
+    // analogWrite(pin_pwm_x, Output_theta * 255);
+
     // Serial.println("Input_y: " + String(Input_y) +
     //                ", Setpoint_y: " + String(Setpoint_y) + ",Output_y: " + String(Output_y) +
     //                ", Input_y in meters: " + String((double)map(Input_y, minY, maxY, 0, 133) / 100) +
     //                ", Setpoint_y in meters: " + String((double)map(Setpoint_y, minY, maxY, 0, 133) / 100));
-    lastTimeXY = time;
+    lastTimeTHETA = time;
   }
+
+  // if (time - lastTimeXY >= sampletimeXY) {
+  //   Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
+  //   xPID.Compute();
+  //   double errorX = Setpoint_x - Input_x;
+
+  //   // (Output_x-0.5)+(Output_theta-0.5)
+
+  //   if (errorX > 0) {                                                                                                          // going right, PWM<0.5
+  //     analogWrite(pin_pwm_x, min((Output_x - 0.5) * 255 + (Output_theta - 0.5) * 255 - abs(0.5 - minPWMx_right), 0.9 * 255));  //(0.6 - 0.5) * 255 + Output_y * 255);
+  //     // Serial.println(min((minPWMx_left - 0.5) * 255 + Output_x * 255, 0.9 * 255));
+  //     // Serial.println((minPWMx_left - 0.5) * 255 + Output_x * 255);
+  //     // Serial.println((minPWMx_left - 0.5) * 255 + String("\t") + Output_x * 255);
+  //     // Serial.println(minPWMx_left - 0.5);
+  //   } else if (errorX < 0) {                                                                                                  // going left, PWM>0.5
+  //     analogWrite(pin_pwm_x, max((Output_x - 0.5) * 255 + (Output_theta - 0.5) * 255 + abs(0.5 - minPWMx_left), 0.1 * 255));  //(0.39 - 0.5) * 255 + Output_y * 255);
+  //     // Serial.println(max((minPWMx_right - 0.5) * 255 + Output_x * 255, 0.1 * 255));
+  //     // Serial.println((minPWMx_right - 0.5) * 255 + Output_x * 255);
+  //     // Serial.println((minPWMx_right - 0.5) * 255 + String("\t") + Output_x * 255);
+  //     // Serial.println(minPWMx_right - 0.5);
+  //   }
+
+  //   // Serial.println("Input_y: " + String(Input_y) +
+  //   //                ", Setpoint_y: " + String(Setpoint_y) + ",Output_y: " + String(Output_y) +
+  //   //                ", Input_y in meters: " + String((double)map(Input_y, minY, maxY, 0, 133) / 100) +
+  //   //                ", Setpoint_y in meters: " + String((double)map(Setpoint_y, minY, maxY, 0, 133) / 100));
+  //   lastTimeXY = time;
+  // }
 
   Serial.println(String("Angle: ") + Input_theta + String("\t PWM angle: ") + Output_theta +
                  String("\t X position: ") + Input_x + String("\t PWM x: ") + Output_x +

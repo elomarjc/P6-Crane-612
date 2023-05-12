@@ -36,23 +36,23 @@
 // void loop() {
 //   time = millis();
 //   if (time - lastTime >= sampletimeXY) {
-//     readInput();
+//     Input_y = (double)map(analogRead(pin_pos_y), minY, maxY, 0, 133) / 100;
 //     yPID.Compute();
 //     double errorY = Setpoint_y - Input_y;
-//     if (errorY < 0) {                                                     // going up, PWM>0.5
-//       analogWrite(pin_pwm_y, max((minPWMy_up - 0.5) * 255 + Output_y * 255, 0.1*255));  //(0.6 - 0.5) * 255 + Output_y * 255);
+//     if (errorY < 0) {                                                                        // going up, PWM>0.5
+//       analogWrite(pin_pwm_y, max(Output_y * 255, 0.1 * 255 - abs(minPWMy_up - 0.5) * 255));  //(0.6 - 0.5) * 255 + Output_y * 255);
 //       // Serial.print((minPWMy_up - 0.5) * 255 + Output_y * 255 + String("; "));
-//     } else if (0 < errorY) {                                                // going down, PWM<0.5
-//       analogWrite(pin_pwm_y, min((minPWMy_down - 0.5) * 255 + Output_y * 255, 0.9*255));  //(0.39 - 0.5) * 255 + Output_y * 255);
+//     } else if (0 < errorY) {                                                                 // going down, PWM<0.5
+//       analogWrite(pin_pwm_y, min(Output_y * 255, 0.9 * 255) - abs(minPWMy_up - 0.5) * 255);  //(0.39 - 0.5) * 255 + Output_y * 255);
 //       // Serial.print((minPWMy_down - 0.5) * 255 + Output_y * 255 + String("; "));
 //     }
-//     Serial.print(Input_y + String(";"));
+//     // Serial.print(Input_y + String(";"));
 
-//     // Serial.println(Input_y + String("; ") + Setpoint_y + String("; ") + Output_y);
+//     Serial.println(String("\t Current position Y: ") + Input_y + String("\t setpoint: ") + Setpoint_y + String("\t PWM Y: ") + Output_y);
 
-//     if (20000 < time) {
-//       Setpoint_y = 1.1;
-//     }
+//     // if (20000 < time) {
+//     //   Setpoint_y = 1.1;
+//     // }
 
 //     // Serial.println("Input_y: " + String(Input_y) +
 //     //                ", Setpoint_y: " + String(Setpoint_y) + ",Output_y: " + String(Output_y) +
