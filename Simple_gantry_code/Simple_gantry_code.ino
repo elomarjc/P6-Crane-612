@@ -10,13 +10,13 @@ int startPos = -1;
 int finalPos = 0;
 int time = millis();
 // Define these based on values given in positionalValues()
-int minX = 136;  // left
-int maxX = 951;  // right
-int minY = 50;    // ceiling
+int minX = 855;  // left
+int maxX = 44;  // right
+int minY = 0;    // ceiling
 int maxY = 873;  // floor
 
 void setVelocityX(float velocity) {
-  // [0.1; 0.9], <0.5 to the left, >0.5 to the
+  // [0.1; 0.9], >0.5 to the left, <0.5 to the
   // right, =0.5 stand still, speed is determined
   // as difference between 0.5 and given value
   analogWrite(pin_pwm_x, 255 * velocity);
@@ -141,12 +141,15 @@ void setup() {
   setVelocityY(0.5);
   // angleCorrection();
   time = millis();
+  Serial3.println("M1");  // turn on the magnet
   Serial.print("Starting time in ms: ");
   Serial.println(time);
 }
 
 void loop() {
-  positionalValues();
+  digitalWrite(pin_enable_x, HIGH);
+  analogWrite(pin_pwm_x, 0.75*255);
+  // positionalValues();
   // getAngleFromHead();
   // verifyPositionX();
   // verifyPositionY();

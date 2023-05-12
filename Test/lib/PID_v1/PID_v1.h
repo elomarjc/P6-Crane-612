@@ -80,7 +80,7 @@ class PID_v1
                                   //   what these values are.  with pointers we'll just know.
 			  
 	unsigned long lastTime;
-	double outputSum, lastInput;
+	double outputSum, lastInput, lastError;
 
 	unsigned long SampleTime;
 	double outMin, outMax;

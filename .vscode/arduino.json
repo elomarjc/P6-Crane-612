@@ -2,5 +2,5 @@
     "configuration": "cpu=atmega2560",
     "board": "arduino:avr:mega",
     "port": "COM5",
-    "sketch": "src\\Ysteptest.cpp"
+    "sketch": "Simple_gantry_code\\Simple_gantry_code.ino"
 }
