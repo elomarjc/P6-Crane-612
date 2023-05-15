@@ -7,14 +7,9 @@
 
 // //// VARIABLES  ////
 // unsigned long time;
-// unsigned long sampletimeTHETA = 1;  // [ms]
 // unsigned long lastTime;
 
-// // double Kp_x = 2.4, Ki_x = 0, Kd_x = 1.92,
-// // double Kp_theta = 22.6, Ki_theta = 0, Kd_theta = 11.3;
-
-// // PID_v1 xPID(&Input_x, &Output_x, &Setpoint_x, Kp_x, Ki_x, Kd_x, DIRECT);
-// PID_v1 thetaPID(&Input_theta, &Output_theta, &Setpoint_theta, Kp_theta, Ki_theta, Kd_theta, REVERSE);
+// PID_v1 thetaPID(&Input_theta, &Output_theta, &Setpoint_theta, Kp_theta, Ki_theta, Kd_theta, DIRECT);  // wire is put on backwards
 
 // void setup() {
 //   Serial.begin(115200);
@@ -30,38 +25,44 @@
 //   pinMode(pin_pwm_x, OUTPUT);
 
 //   // initialize the variables we're linked to
-//   // newSetpoint_x(2);
+// //   angleCorrection();
+// //   delay(10000);
 //   Setpoint_theta = 0 - angleOffset;
 
-//   // xPID.SetSampleTime(sampletimeXY);
-//   thetaPID.SetSampleTime(sampletimeTHETA);
+//   thetaPID.SetSampleTime(sampletime);
 
-//   // xPID.SetOutputLimits(255 * 0.1, 255 * 0.9);      // Standard PWM Range for Motor Drivers
-//   thetaPID.SetOutputLimits(255 * 0.1, 255 * 0.9);  // Standard PWM Range for Motor Drivers
+//   thetaPID.SetOutputLimits(0.1, 0.9);  // Standard PWM Range for Motor Drivers
 
 //   // turn the PID on
 //   // xPID.SetMode(AUTOMATIC);
 //   thetaPID.SetMode(AUTOMATIC);
 //   digitalWrite(pin_enable_x, HIGH);
 
-//   // angleCorrection(); // delete after determining angleOffset
-//   // Serial.println(String("Angle offset: ") + angleOffset); // delete after determining angleOffset
-//   Serial.println (String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
+//   Serial.println(String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
 //   Serial3.println("M1");  // turn on the magnet
-//   // delay(100000); // delete after determining angleOffset
 // }
 
 // void loop() {
 //   time = millis();
-//   unsigned long timeChange = (time - lastTime);
-//   if (timeChange >= min(sampletimeXY,sampletimeTHETA)) {
+//   if (time - lastTime >= sampletime) {
 //     Input_theta = getAngleFromHead();
-//     // xPID.Compute();
 //     thetaPID.Compute();
-//     analogWrite(pin_pwm_x, Output_theta);
+//     double errorTHETA = Setpoint_theta - Input_theta;
+//     if (-2 < errorTHETA && errorTHETA < 2) {
+//       analogWrite(pin_pwm_x, 0.5 * 255);
+//     } else if (errorTHETA > 0) {  // going right, PWM<0.5
+//                                   //   analogWrite(pin_pwm_x, min(Output_x * 255 - abs(0.5 - minPWMx_right)*255, 0.9 * 255));
+//       analogWrite(pin_pwm_x, max(Output_theta * 255 - abs(0.5 - minPWMx_right) * 255, 0.1 * 255));
+//       //   Serial.println(max(Output_theta * 255 - abs(0.5 - minPWMx_right)*255, 0.1 * 255));
+//     } else if (errorTHETA < 0) {  // going left, PWM>0.5
+//                                   //   analogWrite(pin_pwm_x, max(Output_x * 255 + abs(0.5 - minPWMx_left)*255, 0.1 * 255));
+//       analogWrite(pin_pwm_x, min(Output_theta * 255 + abs(0.5 - minPWMx_left) * 255, 0.9 * 255));
+//       //   Serial.println(min(Output_theta * 255 + abs(0.5 - minPWMx_left)*255, 0.9 * 255));
+//     }
+//     // analogWrite(pin_pwm_x, Output_theta * 255);
 
-//     // Serial.println(String("X position: ") + (double)map(Input_x, minX, maxX, 0, 400) / 100 + String(", Theta PWM: ") + Output_theta);
-//     Serial.print(Input_theta + String(";"));
+//     Serial.println(String("X position: ") + (double)map(Input_x, minX, maxX, 0, 400) / 100 + String("\t Angle ") + Input_theta + String("\t Theta PWM: ") + Output_theta);
+//     // Serial.print(Input_theta + String(";"));
 
 //     // if (20000 < time) {
 //     //   newSetpoint_y(1.1);

@@ -11,7 +11,7 @@ int finalPos = 0;
 int time = millis();
 // Define these based on values given in positionalValues()
 int minX = 855;  // left
-int maxX = 44;  // right
+int maxX = 44;   // right
 int minY = 0;    // ceiling
 int maxY = 873;  // floor
 
@@ -111,7 +111,7 @@ void angleCorrection() {
   int n = 1000;
   int i = 0;
   while (i < n) {
-    Serial3.readStringUntil('\n'); // not sure if needed
+    Serial3.readStringUntil('\n');  // not sure if needed
     if (Serial3.available()) {
       String angleData = Serial3.readStringUntil('\n');
       angleSum += angleData.toFloat();
@@ -148,7 +148,7 @@ void setup() {
 
 void loop() {
   digitalWrite(pin_enable_x, HIGH);
-  analogWrite(pin_pwm_x, 0.75*255);
+  analogWrite(pin_pwm_x, 0.39*255);
   // positionalValues();
   // getAngleFromHead();
   // verifyPositionX();
