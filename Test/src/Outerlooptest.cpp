@@ -1,9 +1,79 @@
 // Include libraries
 #include <Arduino.h>
+#include <functions.h>
+#include <Wire.h>
+#include "sigProc.h"
+#include "path.h"
+#include "pathVertical.h"
+#include "math.h"
+#include "pinDefinitions.h"
+#include "dataStructures.h"
 #include <PID_v1.h>
 
-#include "functions.h"
-#include "pinDefinitions.h"
+// Loop sample period
+uint32_t Ts = 1e6 / 100; // 100 Hz
+bool magnet_sw;
+
+#define DYNAMICNOTCHFILTER
+
+low_pass xPosLowpasss = low_pass(0.03); // Lowpass filter tau = 30 ms.
+low_pass angleLowpass = low_pass(0.03); // Lowpass filter tau = 30 ms.
+low_pass angleHighpass = low_pass(1);
+
+#ifdef DYNAMICNOTCHFILTER
+NotchFilter angleNotchFilter;
+#else
+
+/*
+H_z =
+
+  0.9697 z^2 - 1.918 z + 0.9697
+  -----------------------------
+     z^2 - 1.918 z + 0.9394
+*/
+
+float b[3] = {0.9412, -1.862, 0.9412};
+float a[3] = {1.0000, -1.862, 0.8824};
+
+IIR angleNotchFilter = IIR(a, b);
+
+#endif
+
+// Convert wire length to 2nd pendulum frequency
+float wirelengthToFrequency(float length, bool withContainer)
+{
+  if (withContainer)
+  {
+    return 3.85 - atan(6.5 * length);
+  }
+  else
+  {
+    return 2.85 - atan(5 * length) * 0.51;
+  }
+}
+
+void readInput()
+{
+  Input_x = analogRead(pin_pos_x);
+  Input_theta = getAngleFromHead();
+
+  // Filter trolley position inputs
+  Input_x = xPosLowpasss.update(Input_x);
+
+  Input_theta = angleLowpass.update(Input_theta);
+  Input_theta = Input_theta - angleHighpass.update(Input_theta);
+
+  // Update notch filter parameters
+  #ifdef DYNAMICNOTCHFILTER
+    angleNotchFilter.updateFrequency(wirelengthToFrequency(Input_y, magnet_sw));
+  #endif
+
+  Input_theta = angleNotchFilter.update(Input_theta);
+  Input_x = (double)map(Input_x, minX, maxX, 0, 400) / 100;
+}
+
+//  Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
+//  Input_theta = getAngleFromHead();
 
 //// VARIABLES  ////
 unsigned long time;
@@ -45,7 +115,14 @@ void setup() {
   //   Serial3.println("M0");  // turn off the magnet
   Serial3.println("M1");  // turn on the magnet
   Setpoint_x = 2;
-  Setpoint_theta = 0 - angleOffset;
+  Setpoint_theta = 0; //-angleOffset
+
+  #ifdef DYNAMICNOTCHFILTER
+    // Initial values
+    angleNotchFilter = NotchFilter(2.35, 2, Ts / 1e6);
+  #endif
+
+
 }
 
 void loop() {
@@ -53,8 +130,7 @@ void loop() {
   double errorX = Setpoint_x - Input_x;
 
   if (time - lastTime >= sampletime) {
-    Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
-    Input_theta = getAngleFromHead();
+    readInput();
     xPID.Compute();
     thetaPID.Compute();
     double errorX = Setpoint_x - Input_x;
