@@ -76,8 +76,8 @@ bool PID_v1::Compute() {
 
     /*Add Proportional on Error, if P_ON_E is specified*/
     double output;
-    if (pOnE) output = 0.5 + kp * error;
-    // if(pOnE) output = kp * error;
+    // if (pOnE) output = 0.5 + kp * error;
+    if(pOnE) output = kp * error;
     else
       output = 0;
 
@@ -117,7 +117,7 @@ void PID_v1::SetTunings(double Kp, double Ki, double Kd, int POn) {
   dispKi = Ki;
   dispKd = Kd;
 
-  double SampleTimeInSec = ((double)SampleTime) / 1000;
+  // double SampleTimeInSec = ((double)SampleTime) / 1000;
   kp = Kp;
   ki = Ki * SampleTime;// * SampleTimeInSec;
   kd = Kd / SampleTime;// / SampleTimeInSec;

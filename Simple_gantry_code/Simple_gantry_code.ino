@@ -124,7 +124,7 @@ void angleCorrection() {
 }
 
 void setup() {
-  Serial.begin(9600);   // communication with microcontroller
+  Serial.begin(115200);   // communication with microcontroller
   Serial3.begin(9600);  // communication with head (error is ok)
   while (!Serial) {     // empty while loop while waiting for Serial-port to open
   }
@@ -147,9 +147,13 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(pin_enable_x, HIGH);
-  analogWrite(pin_pwm_x, 0.39*255);
-  // positionalValues();
+  // digitalWrite(pin_enable_y, HIGH);
+  // digitalWrite(pin_enable_x, HIGH);
+  // float speed = 0.1;
+  // analogWrite(pin_pwm_y, speed*255);
+  // analogWrite(pin_pwm_x, 127);
+  // Serial.println(speed);
+  positionalValues();
   // getAngleFromHead();
   // verifyPositionX();
   // verifyPositionY();

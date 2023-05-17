@@ -43,29 +43,31 @@
 //     double errorX = Setpoint_x - Input_x;
 //     // if (-0.01 < errorX && errorX < 0.01) {
 //     //   analogWrite(pin_pwm_x, 0.5 * 255);
-//     // } else 
-//     if (errorX > 0) {                                                              // going right, PWM<0.5
-//     //   analogWrite(pin_pwm_x, min(Output_x * 255 - abs(0.5 - minPWMx_right)*255, 0.9 * 255));  //(0.6 - 0.5) * 255 + Output_y * 255);
-//       analogWrite(pin_pwm_x, max(Output_x * 255 - abs(0.5 - minPWMx_right)*255, 0.1 * 255));  //(0.6 - 0.5) * 255 + Output_y * 255);
-//     //   Serial.println(max(Output_x * 255 - abs(0.5 - minPWMx_right)*255, 0.1 * 255));
+//     // } else
+//     if (errorX > 0) {  // going right, PWM<0.5
+//       //   analogWrite(pin_pwm_x, min(Output_x * 255 - abs(0.5 - minPWMx_right)*255, 0.9 * 255));  //(0.6 - 0.5) * 255 + Output_y * 255);
+//       double dir = max(Output_x * 255, 0.1 * 255); // - (abs(0.5 - minPWMx_right) * 255)
+//       analogWrite(pin_pwm_x, dir);
+//       Serial.println(String("Right ") + dir);
 //       // Serial.println((minPWMx_left - 0.5) * 255 + Output_x * 255);
 //       // Serial.println((minPWMx_left - 0.5) * 255 + String("\t") + Output_x * 255);
 //       // Serial.println(minPWMx_left - 0.5);
-//     } else if (errorX < 0) {                                                             // going left, PWM>0.5
-//     //   analogWrite(pin_pwm_x, max(Output_x * 255 + abs(0.5 - minPWMx_left)*255, 0.1 * 255));  //(0.39 - 0.5) * 255 + Output_y * 255);
-//       analogWrite(pin_pwm_x, min(Output_x * 255 + abs(0.5 - minPWMx_left)*255, 0.9 * 255));  //(0.39 - 0.5) * 255 + Output_y * 255);
-//     //   Serial.println(min(Output_x * 255 + abs(0.5 - minPWMx_left)*255, 0.9 * 255));
+//     } else if (errorX < 0) {  // going left, PWM>0.5
+//       //   analogWrite(pin_pwm_x, max(Output_x * 255 + abs(0.5 - minPWMx_left)*255, 0.1 * 255));  //(0.39 - 0.5) * 255 + Output_y * 255);
+//       double dir = min(Output_x * 255, 0.9 * 255); //  + (abs(0.5 - minPWMx_left) * 255)
+//       analogWrite(pin_pwm_x, dir);
+//       Serial.println(String("Left ") + dir);
 //       // Serial.println((minPWMx_right - 0.5) * 255 + Output_x * 255);
 //       // Serial.println((minPWMx_right - 0.5) * 255 + String("\t") + Output_x * 255);
 //       // Serial.println(minPWMx_right - 0.5);
 //     }
 
 //     // Serial.print(Input_x + String(";"));
-//     Serial.println(String("X position: ") + Input_x + String("\t PWM X: ") + Output_x);
+//     // Serial.println(String("X position: ") + Input_x + String("\t PWM X: ") + Output_x);
 
-//     if (20000 < time) {
-//       Setpoint_x = 3;
-//     }
+//     // if (20000 < time) {
+//     //   Setpoint_x = 3;
+//     // }
 
 //     // Serial.println("Input_x: " + String(Input_x) +
 //     //                ", Setpoint_x: " + String(Setpoint_x) + ",Output_x: " + String(Output_x) +

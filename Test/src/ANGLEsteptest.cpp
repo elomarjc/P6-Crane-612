@@ -25,9 +25,9 @@
 //   pinMode(pin_pwm_x, OUTPUT);
 
 //   // initialize the variables we're linked to
-// //   angleCorrection();
-// //   delay(10000);
-//   Setpoint_theta = 0 - angleOffset;
+//   //   angleCorrection();
+//   //   delay(10000);
+//   Setpoint_theta = 0;
 
 //   thetaPID.SetSampleTime(sampletime);
 
@@ -45,23 +45,25 @@
 // void loop() {
 //   time = millis();
 //   if (time - lastTime >= sampletime) {
-//     Input_theta = getAngleFromHead();
+//     Input_theta = getAngleFromHead()/100;
 //     thetaPID.Compute();
 //     double errorTHETA = Setpoint_theta - Input_theta;
 //     if (-2 < errorTHETA && errorTHETA < 2) {
 //       analogWrite(pin_pwm_x, 0.5 * 255);
 //     } else if (errorTHETA > 0) {  // going right, PWM<0.5
-//                                   //   analogWrite(pin_pwm_x, min(Output_x * 255 - abs(0.5 - minPWMx_right)*255, 0.9 * 255));
-//       analogWrite(pin_pwm_x, max(Output_theta * 255 - abs(0.5 - minPWMx_right) * 255, 0.1 * 255));
-//       //   Serial.println(max(Output_theta * 255 - abs(0.5 - minPWMx_right)*255, 0.1 * 255));
+//       analogWrite(pin_pwm_x, min(Output_theta * 255 + abs(0.5 - minPWMx_right) * 255, 0.9 * 255));
+//       //   analogWrite(pin_pwm_x, max(Output_theta * 255 + abs(0.5 - minPWMx_right) * 255, 0.1 * 255));
+//       Serial.println(String("Right ") + min(Output_theta * 255 + abs(0.5 - minPWMx_right) * 255, 0.9 * 255));
 //     } else if (errorTHETA < 0) {  // going left, PWM>0.5
-//                                   //   analogWrite(pin_pwm_x, max(Output_x * 255 + abs(0.5 - minPWMx_left)*255, 0.1 * 255));
-//       analogWrite(pin_pwm_x, min(Output_theta * 255 + abs(0.5 - minPWMx_left) * 255, 0.9 * 255));
-//       //   Serial.println(min(Output_theta * 255 + abs(0.5 - minPWMx_left)*255, 0.9 * 255));
+//       analogWrite(pin_pwm_x, max(Output_theta * 255 - abs(0.5 - minPWMx_left) * 255, 0.1 * 255));
+//       //   analogWrite(pin_pwm_x, min(Output_theta * 255 - abs(0.5 - minPWMx_left) * 255, 0.9 * 255));
+//       Serial.println(String("Left") + max(Output_theta * 255 - abs(0.5 - minPWMx_left) * 255, 0.1 * 255));
 //     }
+//     // else {
 //     // analogWrite(pin_pwm_x, Output_theta * 255);
+//     // }
 
-//     Serial.println(String("X position: ") + (double)map(Input_x, minX, maxX, 0, 400) / 100 + String("\t Angle ") + Input_theta + String("\t Theta PWM: ") + Output_theta);
+//     // Serial.println(String("X position: ") + (double)map(Input_x, minX, maxX, 0, 400) / 100 + String("\t Angle ") + Input_theta + String("\t Theta PWM: ") + Output_theta);
 //     // Serial.print(Input_theta + String(";"));
 
 //     // if (20000 < time) {
