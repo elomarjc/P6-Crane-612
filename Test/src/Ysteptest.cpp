@@ -46,7 +46,7 @@
 //       Kp_y = 32.4, Ki_y = 0, Kd_y = 12.96;  // PID-values for going up
 //       yPID.SetTunings(Kp_y, Ki_y, Kd_y, 1);
 //       yPID.Compute();
-//       // Output_y = (double) map(Output_y*100, -1.33*100, 1.33*100, 0.1*100, 0.9*100) / 100;
+//       // Output_y = (double) map(Input_y*100, -1.33*100, 1.33*100, 0.1*100, 0.9*100) / 100;
 //       analogWrite(pin_pwm_y, max(Output_y * 255- abs(minPWMy_up - 0.5) * 255, 0.1 * 255));
 //       Serial.print(Output_y + String(";"));
 //     } else if (0 < errorY) {         // going down, PWM>0.5
@@ -54,7 +54,7 @@
 //       // Kp_y = 1, Ki_y = 0, Kd_y = 0;
 //       yPID.SetTunings(Kp_y, Ki_y, Kd_y, 1);
 //       yPID.Compute();
-//       // Output_y = (double) map(Output_y*100, 0, 1.33*100, minPWMy_down*100, 0.9*100) / 100;
+//       // Output_y = (double) map(Input_y*100, 0, 1.33*100, minPWMy_down*100, 0.9*100) / 100;
 //       Output_y = (double) map(Output_y*100, 0.5*100, 0.9*100, 0.33*100, 0.9*100) / 100;
 //       analogWrite(pin_pwm_y, min(Output_y * 255 , 0.9 * 255)); // + abs(minPWMy_down - 0.5) * 255
 //       Serial.print(Output_y + String(";"));
