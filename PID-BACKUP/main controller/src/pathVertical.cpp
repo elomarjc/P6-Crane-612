@@ -39,82 +39,82 @@ int QauyToShipV::update(float xPos, float yPos, xy_float  *ref , float xContaine
         }
     }
 
-    // // Move to above qauy
-    // if (step==1) {
-    //     Serial.println("Step = 1, move to above quay");
-    //     ref->x = 0.9;
-    //     *innnerLoopOn = false;
-    //     if (0.885>xPos || xPos>0.915) {    //If trolley is not above container. pm 2 cm
-    //        failTime = millis();
-    //        Serial.println("Trolley is not above container.");
-    //     } else if (millis() > failTime + 300) { //If head has been above container for 0.5s 
-    //        Serial.println("Trolley is above container.");
-    //        step = 2;
-    //        turnOnElectromagnet(true,LelectroMagnetLED);
-    //        Serial.println("//Step1 passed");
-    //    }
-    //    delay(5000);
-    // }
+    // Move to above qauy
+    if (step==1) {
+        Serial.println("Step = 1, move to above quay");
+        ref->x = 0.9;
+        *innnerLoopOn = false;
+        if (0.885>xPos || xPos>0.915) {    //If trolley is not above container. pm 2 cm
+           failTime = millis();
+           Serial.println("Trolley is not above container.");
+        } else if (millis() > failTime + 300) { //If head has been above container for 0.5s 
+           Serial.println("Trolley is above container.");
+           step = 2;
+           turnOnElectromagnet(true,LelectroMagnetLED);
+           Serial.println("//Step1 passed");
+       }
+       delay(5000);
+    }
 
-    // // Lower head onto container
-    // if (step==2) {
-    //     Serial.println("Step = 2, lower head onto container");
-    //     ref->y = 0.8;
-    //     *innnerLoopOn = false;
-    //     if (yPos<0.73) {
-    //         failTime = millis();
-    //         Serial.println("//Step2 passed");
-    //     } else if (millis() > failTime + 400) {
-    //         step=4;
-    //         Serial.println("Else if step=4");
-    //     }
-    //     delay(5000);
-    // }
+    // Lower head onto container
+    if (step==2) {
+        Serial.println("Step = 2, lower head onto container");
+        ref->y = 0.8;
+        *innnerLoopOn = false;
+        if (yPos<0.73) {
+            failTime = millis();
+            Serial.println("//Step2 passed");
+        } else if (millis() > failTime + 400) {
+            step=4;
+            Serial.println("Else if step=4");
+        }
+        delay(5000);
+    }
 
-    // // Hoist contrainer
-    // if (step==3) {
-    //     Serial.println("Step = 3, move to safety point");
-    //     ref->y = 1.20;
-    //     *innnerLoopOn = true;
-    //     if ( yPos < 1.12) {        
-    //         step=4;
-    //         Serial.println("//Step3 passed");
-    //     }
-    //     delay(5000);
-    // }
+    // Hoist contrainer
+    if (step==3) {
+        Serial.println("Step = 3, move to safety point");
+        ref->y = 1.20;
+        *innnerLoopOn = true;
+        if ( yPos < 1.12) {        
+            step=4;
+            Serial.println("//Step3 passed");
+        }
+        delay(5000);
+    }
 
-    // // Move above ship
-    // if (step==4) {
-    //     Serial.println("Step = 4, move above ship");
-    //     ref->x=3;
-    //     ref->y=0.8;
-    //     *innnerLoopOn = true;
-    //     if (2.90>xContainer || xContainer>3.10 || 2.90>xPos ||xPos>3.10){      //If not within position
-    //         failTime = millis();
-    //         // Serial.println("//FAILING STEP 4 criteria ");
-    //         Serial.println("Crane is not in position.");
-    //     } else if (millis() > failTime + 1600) {     //This can be changed to something as a function of velocity and position
-    //         step=5;   
-    //         Serial.println("//Step4 passed");
-    //     }
-    //     delay(5000);
-    // }
+    // Move above ship
+    if (step==4) {
+        Serial.println("Step = 4, move above ship");
+        ref->x=3;
+        ref->y=0.8;
+        *innnerLoopOn = true;
+        if (2.90>xContainer || xContainer>3.10 || 2.90>xPos ||xPos>3.10){      //If not within position
+            failTime = millis();
+            // Serial.println("//FAILING STEP 4 criteria ");
+            Serial.println("Crane is not in position.");
+        } else if (millis() > failTime + 1600) {     //This can be changed to something as a function of velocity and position
+            step=5;   
+            Serial.println("//Step4 passed");
+        }
+        delay(5000);
+    }
 
 
-    // // Move down to ship and turn off electro magnet.
-    // if (step==5) {
-    //     Serial.println("Step = 5, move downto ship and turn off electro magnet.");  
-    //     ref->y = 0.280;
-    //     *innnerLoopOn = false;
-    //     if (yPos > 0.283) {
-    //         turnOnElectromagnet(false,LelectroMagnetLED);
-    //         *innnerLoopOn = false;
-    //         ref->y = 1.30;
-    //         step=7;
-    //         Serial.println("//Step5 passed");
-    //     }
-    //     delay(5000);
-    // }
+    // Move down to ship and turn off electro magnet.
+    if (step==5) {
+        Serial.println("Step = 5, move downto ship and turn off electro magnet.");  
+        ref->y = 0.280;
+        *innnerLoopOn = false;
+        if (yPos > 0.283) {
+            turnOnElectromagnet(false,LelectroMagnetLED);
+            *innnerLoopOn = false;
+            ref->y = 1.30;
+            step=7;
+            Serial.println("//Step5 passed");
+        }
+        delay(5000);
+    }
 
     return step;
 }
