@@ -1,125 +1,100 @@
-#include "pathVertical.h"
+#include "path.h"
 #include "functions.h"
 #include "dataStructures.h"
 
 #include <Arduino.h>
 
-QauyToShipV::QauyToShipV(int electroMagnetLED){
+QauyToShip::QauyToShip(int electroMagnetLED){
     LelectroMagnetLED = electroMagnetLED;
 }
 
-int QauyToShipV::update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed, bool *pathRunning, bool *innnerLoopOn){
-       
-    // Before start
-    if (step==0) {    
+void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed, bool *pathRunning, bool *innnerLoopOn){
+    
+    //Before start
+    if(step==0) {
         Serial.println("Step = 0");
         //If at start position
-        if (-0.1<xPos && xPos<0.450 && -0.05<yPos && yPos<0.052){
+        if(-0.05<xPos && xPos<0.15 && -0.05<yPos && yPos<0.05){
             step=1;
             *pathRunning=true;
             *innnerLoopOn = false;
             Serial.println("Trolley is at the start position");
-            Serial.println("//Step0 passed");
-        } else {
-            Serial.println("Not in start position");
         }
-        delay(2000);
-    } 
-    
-    if (step==1) {
-        Serial.println("Step = 1, move to above quay");
-        ref->y = 1.1;
-        *innnerLoopOn = false;
-        if (yPos<1.05)
-        {
-            Serial.println("Trolley is above container.");
-            step = 2;
-            Serial3.println("M1");
-            Serial.println("//Step1 passed");
+        else{
+            Serial.println("Not in start position");
         }
     }
 
-    // Move to above qauy
-    if (step==1) {
+    //Move to above qauy
+    if(step==1){
         Serial.println("Step = 1, move to above quay");
-        ref->x = 0.9;
+        ref->x = 0.5;
+        ref->y = 0.02;
         *innnerLoopOn = false;
-        if (0.885>xPos || xPos>0.915) {    //If trolley is not above container. pm 2 cm
+        if(0.49>xPos || xPos>0.51){    //If trolley is not above container. pm 2 cm
            failTime = millis();
            Serial.println("Trolley is not above container.");
-        } else if (millis() > failTime + 300) { //If head has been above container for 0.5s 
+       } else if(millis() > failTime+300){ //If head has been above container for 0.5s 
            Serial.println("Trolley is above container.");
            step = 2;
            turnOnElectromagnet(true,LelectroMagnetLED);
-           Serial.println("//Step1 passed");
        }
-       delay(5000);
     }
 
-    // Lower head onto container
-    if (step==2) {
+    //Lower head onto container
+    if(step==2){
         Serial.println("Step = 2, lower head onto container");
-        ref->y = 0.8;
+        ref->y = 1.23;   //1.23
         *innnerLoopOn = false;
-        if (yPos<0.73) {
+        if(yPos<1.21){  
             failTime = millis();
-            Serial.println("//Step2 passed");
-        } else if (millis() > failTime + 400) {
+        } else if (millis() > failTime+400) {
             step=4;
             Serial.println("Else if step=4");
         }
-        delay(5000);
     }
 
-    // Hoist contrainer
-    if (step==3) {
+    //Move to safety point
+    if(step==3){
         Serial.println("Step = 3, move to safety point");
-        ref->y = 1.20;
+        ref->x = 2.41;
+        ref->y = 0.74;
         *innnerLoopOn = true;
-        if ( yPos < 1.12) {        
+        if ( yPos < 0.80) {        //Hopefully crane will not be waiting for this
             step=4;
-            Serial.println("//Step3 passed");
         }
-        delay(5000);
     }
 
-    // Move above ship
-    if (step==4) {
+    //Move above ship
+    if(step==4){
         Serial.println("Step = 4, move above ship");
-        ref->x=3;
-        ref->y=0.8;
+        ref->x=3.5;
+        ref->y=0.75;
         *innnerLoopOn = true;
-        if (2.90>xContainer || xContainer>3.10 || 2.90>xPos ||xPos>3.10){      //If not within position
+        if(3.46>xContainer || xContainer>3.54 || 3.46>xPos ||xPos>3.54){      //If not within position
             failTime = millis();
-            // Serial.println("//FAILING STEP 4 criteria ");
             Serial.println("Crane is not in position.");
-        } else if (millis() > failTime + 1600) {     //This can be changed to something as a function of velocity and position
-            step=5;   
-            Serial.println("//Step4 passed");
+        } else if(millis() > failTime + 1500) {     //This can be changed to something as a function of velocity and position
+            step=5; 
         }
-        delay(5000);
     }
 
 
-    // Move down to ship and turn off electro magnet.
-    if (step==5) {
+    //Move downto ship and turn off electro magnet.
+    if(step==5){
         Serial.println("Step = 5, move downto ship and turn off electro magnet.");  
-        ref->y = 0.280;
-        *innnerLoopOn = false;
-        if (yPos > 0.283) {
+        ref->y = 1.23;
+        *innnerLoopOn = true;
+        if(yPos > 1.21){
             turnOnElectromagnet(false,LelectroMagnetLED);
             *innnerLoopOn = false;
-            ref->y = 1.30;
+            ref->y = 0.3;
             step=7;
-            Serial.println("//Step5 passed");
         }
-        delay(5000);
     }
-
-    return step;
 }
 
-void QauyToShipV::reset(){
+void QauyToShip::reset(){
         step=0;
         failTime =0;
 }
@@ -129,14 +104,15 @@ void QauyToShipV::reset(){
 //*****************************************************
 
 
-
-ShipToQauyV::ShipToQauyV(int electroMagnetLED){
+ShipToQauy::ShipToQauy(int electroMagnetLED){
     LelectroMagnetLED = electroMagnetLED;
 }
 
-void ShipToQauyV::update(float xPos, float yPos, xy_float *ref, float xContainer, float containerSpeed,  bool *pathRunning, bool *innerLoopOn){
+void ShipToQauy::update(float xPos, float yPos, xy_float *ref, float xContainer, float containerSpeed,  bool *pathRunning, bool *innerLoopOn){
     
     //Before start
+
+    
     if(step==0) {    
         //If at start position
         if(3.90<xPos && xPos<4.05 && -0.05<yPos && yPos<0.05){
@@ -193,7 +169,7 @@ void ShipToQauyV::update(float xPos, float yPos, xy_float *ref, float xContainer
     }
 
     if(step==5){
-        //ref->y = 1.15; //3cm above qauy
+        ref->y = 1.15; //3cm above qauy
         *innerLoopOn = true;
         if(xContainer<0.44 || xContainer> 0.54||xPos<0.44 || xPos> 0.54 ){
             failTime=millis();
@@ -216,11 +192,6 @@ void ShipToQauyV::update(float xPos, float yPos, xy_float *ref, float xContainer
         }
 
     }
-}
-
-void ShipToQauyV::reset(){
-        step=0;
-        failTime =0;
 }
 
 
