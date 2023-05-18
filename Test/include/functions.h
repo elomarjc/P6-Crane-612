@@ -16,16 +16,19 @@ double Setpoint_y, Input_y, Output_y,
     Setpoint_theta, Input_theta, Output_theta;
 
 // calculated K-values
-// double Kp_y = 32.4, Ki_y = 0, Kd_y = 12.96;
-// double Kp_x = 1.59, Ki_x = 0, Kd_x = 1.15;
-// double Kp_theta = 9, Ki_theta = 0, Kd_theta = 4.5;
+double Kp_y = 32.4, Ki_y = 0, Kd_y = 12.96;
+double Kp_x = 1.59, Ki_x = 0, Kd_x = 1.15;
+double Kp_theta = 9, Ki_theta = 0, Kd_theta = 4.5;
 
 // experimental K-values
-double Kp_y = 2, Ki_y = 0, Kd_y = 12.96;
-double Kp_x = 1.59, Ki_x = 0, Kd_x = 1.15;
-double Kp_theta = 0.9, Ki_theta = 0, Kd_theta = 0.45;
+// double Kp_y = 2, Ki_y = 0, Kd_y = 12.96;
+// double Kp_x = 3, Ki_x = 0, Kd_x = 2.3;
+// double Kp_theta = 0.9, Ki_theta = 0, Kd_theta = 0.45;
 
-double minCurrenty_up = -3.4, minCurrenty_down = 0.74,  // [A]
+// double minCurrenty_up = -3.4, minCurrenty_down = 0.74,  // [A]
+//     minCurrentx_left = 2, minCurrentx_right = -2;
+
+double minCurrenty_up = -3.4, minCurrenty_down = 0.8,  // [A]
     minCurrentx_left = 2, minCurrentx_right = -2;
 
 // double minPWMy_up = 0.33, minPWMy_down = 0.54,
@@ -47,18 +50,18 @@ void dropload() {
     Serial.println("Releasing load");
     Serial3.println("M0");  // turn off the magnet
   } else {
-    Serial.println("Load is too high from the ground. Cannot release");
+    // Serial.println("Load is too high from the ground. Cannot release");
   }
 }
 
-//// FOR Y-AXIS ////
-void newSetpoint_y(double newSetpoint) {
-  Setpoint_y = (double)map(newSetpoint * 100, 0, 133, minY, maxY);
-}
-
-//// FOR X-AXIS ////
-void newSetpoint_x(double newSetpoint) {
-  Setpoint_x = (double)map(newSetpoint * 100, 0, 400, minX, maxX);
+void collectload() {
+  Setpoint_y = 1.22;
+  if (Input_y > (1.22 - 0.01)) {
+    Serial.println("Collecting load");
+    Serial3.println("M1");  // turn on the magnet
+  } else {
+    // Serial.println("Crane head is too high from the ground. Cannot collect");
+  }
 }
 
 //// FOR ANGLE ////
