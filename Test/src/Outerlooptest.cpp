@@ -1,79 +1,8 @@
 // Include libraries
 #include <Arduino.h>
 #include <functions.h>
-#include <Wire.h>
-#include "sigProc.h"
-#include "path.h"
-#include "pathVertical.h"
-#include "math.h"
 #include "pinDefinitions.h"
-#include "dataStructures.h"
 #include <PID_v1.h>
-
-// Loop sample period
-uint32_t Ts = 1e6 / 100; // 100 Hz
-bool magnet_sw;
-
-#define DYNAMICNOTCHFILTER
-
-low_pass xPosLowpasss = low_pass(0.03); // Lowpass filter tau = 30 ms.
-low_pass angleLowpass = low_pass(0.03); // Lowpass filter tau = 30 ms.
-low_pass angleHighpass = low_pass(1);
-
-#ifdef DYNAMICNOTCHFILTER
-NotchFilter angleNotchFilter;
-#else
-
-/*
-H_z =
-
-  0.9697 z^2 - 1.918 z + 0.9697
-  -----------------------------
-     z^2 - 1.918 z + 0.9394
-*/
-
-float b[3] = {0.9412, -1.862, 0.9412};
-float a[3] = {1.0000, -1.862, 0.8824};
-
-IIR angleNotchFilter = IIR(a, b);
-
-#endif
-
-// Convert wire length to 2nd pendulum frequency
-float wirelengthToFrequency(float length, bool withContainer)
-{
-  if (withContainer)
-  {
-    return 3.85 - atan(6.5 * length);
-  }
-  else
-  {
-    return 2.85 - atan(5 * length) * 0.51;
-  }
-}
-
-void readInput()
-{
-  Input_x = analogRead(pin_pos_x);
-  Input_theta = getAngleFromHead();
-
-  // Filter trolley position inputs
-  Input_x = xPosLowpasss.update(Input_x);
-
-  Input_theta = angleLowpass.update(Input_theta);
-  Input_theta = Input_theta - angleHighpass.update(Input_theta);
-
-  // Update notch filter parameters
-  #ifdef DYNAMICNOTCHFILTER
-    angleNotchFilter.updateFrequency(wirelengthToFrequency(Input_y, magnet_sw));
-  #endif
-
-  Input_theta = angleNotchFilter.update(Input_theta);
-  Input_x = (double)map(Input_x, minX, maxX, 0, 400) / 100;
-}
-
-//  Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
-//  Input_theta = getAngleFromHead();
 
 //// VARIABLES  ////
 unsigned long time;
@@ -85,23 +14,27 @@ int state = 0;
 unsigned long stateTime = 20000;
 
 PID_v1 yPID(&Input_y, &Output_y, &Setpoint_y, Kp_y, Ki_y, Kd_y, DIRECT);
-PID_v1 xPID(&Input_x, &Output_x, &Setpoint_x, Kp_x, Ki_x, Kd_x, REVERSE);                              // wire is put on backwards
-PID_v1 thetaPID(&Input_theta, &Output_theta, &Setpoint_theta, Kp_theta, Ki_theta, Kd_theta, REVERSE);  // reverse = match xPID
+PID_v1 xPID(&Input_x, &Output_x, &Setpoint_x, Kp_x, Ki_x, Kd_x, REVERSE);                             // wire is put on backwards
+PID_v1 thetaPID(&Input_theta, &Output_theta, &Setpoint_theta, Kp_theta, Ki_theta, Kd_theta, REVERSE); // reverse = match xPID
 
 //// FOR Y-AXIS ////
-void newSetpoint_y(double newSetpoint) {
+void newSetpoint_y(double newSetpoint)
+{
   Setpoint_y = newSetpoint;
 }
 
 //// FOR X-AXIS ////
-void newSetpoint_x(double newSetpoint) {
+void newSetpoint_x(double newSetpoint)
+{
   Setpoint_y = 0.3;
-  if (Input_y < 0.5) {
+  if (Input_y < 0.5)
+  {
     Setpoint_x = newSetpoint;
   }
 }
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   Serial3.begin(9600);
   // Set input pinMode
@@ -119,9 +52,9 @@ void setup() {
   xPID.SetSampleTime(sampletime);
   thetaPID.SetSampleTime(sampletime);
 
-  yPID.SetOutputLimits(currentLimity_up, currentLimity_down);         // Current range on motor driver
-  xPID.SetOutputLimits(currentLimitx_right, currentLimitx_left);      // Current range on motor driver
-  thetaPID.SetOutputLimits(currentLimitx_right, currentLimitx_left);  // Current range on motor driver
+  yPID.SetOutputLimits(currentLimity_up, currentLimity_down);        // Current range on motor driver
+  xPID.SetOutputLimits(currentLimitx_right, currentLimitx_left);     // Current range on motor driver
+  thetaPID.SetOutputLimits(currentLimitx_right, currentLimitx_left); // Current range on motor driver
 
   // turn the PID on
   yPID.SetMode(AUTOMATIC);
@@ -136,49 +69,59 @@ void setup() {
   Serial.println(String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
   //   Serial3.println("M0");  // turn off the magnet
   // Serial3.println("M1");  // turn on the magnet
-  Setpoint_y = 0.3;
-  Setpoint_x = 0.5;
+  Setpoint_y = 0.5;
+  Setpoint_x = 0.3;
   Setpoint_theta = 0;
-
-  #ifdef DYNAMICNOTCHFILTER
-    // Initial values
-    angleNotchFilter = NotchFilter(2.35, 2, Ts / 1e6);
-  #endif
-
-
 }
 
-void loop() {
+void loop()
+{
   time = millis();
 
-  if (time - lastTime >= sampletime) {
-    //readInput();
-    
+  if (time - lastTime >= sampletime)
+  {
+    // readInput();
+
     Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
     Input_theta = getAngleFromHead();
     Input_y = (double)map(analogRead(pin_pos_y), minY, maxY, 0, 133) / 100;
-    
-    //Calculate container position
-    xContainer  = Input_x+(sin((Input_theta*PI)/180))*Input_y;
-    yContainer = (cos((Input_theta*PI)/180))*Input_y; 
-    
-    pathAtoB(Input_x,Input_y,xContainer,yContainer);
 
-    //Calculate PWM using PID
+    // Calculate container position
+    xContainer = Input_x + (sin((Input_theta * PI) / 180)) * Input_y;
+    yContainer = (cos((Input_theta * PI) / 180)) * Input_y;
+
+    //pathAtoB(Input_x, Input_y, xContainer, yContainer);
+    pathBtoA(Input_x, Input_y, xContainer, yContainer);
+
+    // Calculate PWM using PID
+    if (magnet_sw == 0)
+    {
+      yPID.SetTunings(6, 0, 12.96, 1);
+      xPID.SetTunings(1.59, 0, 0.5, 1);
+    }
+    else
+    {
+      yPID.SetTunings(3, 0, 12.96, 1);   // Kp=2
+      xPID.SetTunings(1.59, 0, 1.15, 1);
+    }
+
     xPID.Compute();
     thetaPID.Compute();
     yPID.Compute();
 
     //// Y-AXIS ////
     double currentY = Output_y;
-    if (currentY > 0) {  // going down, PWM>0.5, Current>0
+    if (currentY > 0)
+    { // going down, PWM>0.5, Current>0
       // Serial.println(currentY + String(" here1"));
       currentY = min(currentY + minCurrenty_down, currentLimity_down);
       // Serial.println(currentY + String(" here1"));
       double PWMcurrent = (double)map(currentY * 100, currentLimity_up * 100, currentLimity_down * 100, 0.1 * 100, 0.9 * 100) / 100;
       // Serial.println(currentY + String(" here1 ") + PWMcurrent);
       analogWrite(pin_pwm_y, PWMcurrent * 255);
-    } else if (currentY < 0) {  // going up, PWM<0.5, Current<0
+    }
+    else if (currentY < 0)
+    { // going up, PWM<0.5, Current<0
       // Serial.println(currentY + String(" here2"));
       currentY = max(currentY + minCurrenty_up, currentLimity_up);
       // Serial.println(currentY + String(" here2"));
@@ -195,17 +138,22 @@ void loop() {
 
     //// X-AXIS ////
     double currentX = Output_x - Output_theta;
-    if (currentX > 0) {  // going left, PWM>0.5
+    if (currentX > 0)
+    { // going left, PWM>0.5
       currentX = min(currentX + minCurrentx_left, currentLimitx_left);
       double PWMcurrent = (double)map(currentX * 100, currentLimitx_right * 100, currentLimitx_left * 100, 0.1 * 100, 0.9 * 100) / 100;
       analogWrite(pin_pwm_x, PWMcurrent * 255);
-    } else if (currentX < 0) {  // going right, PWM<0.5
+    }
+    else if (currentX < 0)
+    { // going right, PWM<0.5
       currentX = max(currentX + minCurrentx_right, currentLimitx_right);
       double PWMcurrent = (double)map(currentX * 100, currentLimitx_right * 100, currentLimitx_left * 100, 0.1 * 100, 0.9 * 100) / 100;
       analogWrite(pin_pwm_x, PWMcurrent * 255);
     }
 
-    Serial.println(String("x pos: ") + String(Input_x) + String(", ") + String("x container: ") + String(xContainer));
+    Serial.println(String("x pos: ") + String(Input_x) + String(", ") + String("x container: ") + String(xContainer) + String(", ") + String("y pos: ") + String(Input_y) + String(", ") + String("y set: ") + String(Setpoint_y) + String(", ") + String("x set: ") + String(Setpoint_x));
+    
+    
     // Serial.println(
     //     String("Angle: ") + Input_theta +
     //     String("\t angle current: ") + Output_theta +
@@ -241,30 +189,30 @@ void loop() {
   //   lastTimeTest1 = time;
   // }
 
-  switch (state) {
-    case 0:
-      // collectload();
-      Setpoint_y = 0.2;
-      Setpoint_x = 1;
-      Serial3.println("M1");  // turn on the magnet
-      if (millis() > (state + 1) * stateTime) {
-        state++;
-      }
-      break;
-    case 1:
-      newSetpoint_x(2);
-      if (millis() > (state + 1) * stateTime) {
-        state++;
-      }
-      break;
-    case 2:
-      Setpoint_y = 1.2;
-      if (millis() > (state + 1) * stateTime) {
-        dropload();
-        Setpoint_y = 0.2;
-        Setpoint_x = 1;
-        state = 0;
-      }
-      break;
-  }
+  // switch (state) {
+  //   case 0:
+  //     // collectload();
+  //     Setpoint_y = 0.2;
+  //     Setpoint_x = 1;
+  //     Serial3.println("M1");  // turn on the magnet
+  //     if (millis() > (state + 1) * stateTime) {
+  //       state++;
+  //     }
+  //     break;
+  //   case 1:
+  //     newSetpoint_x(2);
+  //     if (millis() > (state + 1) * stateTime) {
+  //       state++;
+  //     }
+  //     break;
+  //   case 2:
+  //     Setpoint_y = 1.2;
+  //     if (millis() > (state + 1) * stateTime) {
+  //       dropload();
+  //       Setpoint_y = 0.2;
+  //       Setpoint_x = 1;
+  //       state = 0;
+  //     }
+  //     break;
+  // }
 }
