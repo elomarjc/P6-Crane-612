@@ -85,8 +85,6 @@ void loop() {
     //// Y-AXIS ////
     double currentY = Output_y;
     if (currentY > 0) {  // going down, PWM>0.5, Current>0
-      // yPID.SetTunings(2, 0, 12.96, 1); // the last 1 is bc of PID library - DON't TOUCH
-      // yPID.Compute();
       // Serial.println(currentY + String(" here1"));
       currentY = min(currentY + minCurrenty_down, currentLimity_down);
       // Serial.println(currentY + String(" here1"));
@@ -94,8 +92,6 @@ void loop() {
       // Serial.println(currentY + String(" here1 ") + PWMcurrent);
       analogWrite(pin_pwm_y, PWMcurrent * 255);
     } else if (currentY < 0) {  // going up, PWM<0.5, Current<0
-      // yPID.SetTunings(2, 0, 12.96, 1); // the last 1 is bc of PID library - DON't TOUCH
-      // yPID.Compute();
       // Serial.println(currentY + String(" here2"));
       currentY = max(currentY + minCurrenty_up, currentLimity_up);
       // Serial.println(currentY + String(" here2"));
@@ -158,50 +154,30 @@ void loop() {
   //   lastTimeTest1 = time;
   // }
 
-  // switch (state) {
-  //   case 0:
-  //     // collectload();
-  //     Setpoint_y = 0.2;
-  //     Setpoint_x = 1;
-  //     Serial3.println("M1");  // turn on the magnet
-  //     if (millis() > (state + 1) * stateTime) {
-  //       state++;
-  //     }
-  //     break;
-  //   case 1:
-  //     newSetpoint_x(2);
-  //     if (millis() > (state + 1) * stateTime) {
-  //       state++;
-  //     }
-  //     break;
-  //   case 2:
-  //     Setpoint_y = 1.2;
-  //     if (millis() > (state + 1) * stateTime) {
-  //       dropload();
-  //       Setpoint_y = 0.2;
-  //       Setpoint_x = 1;
-  //       state = 0;
-  //     }
-  //     break;
-  // }
-
-  // switch (state) {
-  //   case 0:
-  //     if (millis() > 20000) {
-  //       state++;
-  //     }
-  //     break;
-  //   case 1:
-  //     newSetpoint_x(2);
-  //     if (millis() > 40000) {
-  //       state++;
-  //     }
-  //     break;
-  //   case 2:
-  //     Setpoint_y = 1.2;
-  //     if (millis() > 60000) {
-  //       state++;
-  //     }
-  //     break;
-  // }
+  switch (state) {
+    case 0:
+      // collectload();
+      Setpoint_y = 0.2;
+      Setpoint_x = 1;
+      Serial3.println("M1");  // turn on the magnet
+      if (millis() > (state + 1) * stateTime) {
+        state++;
+      }
+      break;
+    case 1:
+      newSetpoint_x(2);
+      if (millis() > (state + 1) * stateTime) {
+        state++;
+      }
+      break;
+    case 2:
+      Setpoint_y = 1.2;
+      if (millis() > (state + 1) * stateTime) {
+        dropload();
+        Setpoint_y = 0.2;
+        Setpoint_x = 1;
+        state = 0;
+      }
+      break;
+  }
 }
