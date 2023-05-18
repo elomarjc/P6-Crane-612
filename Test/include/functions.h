@@ -11,6 +11,11 @@ int maxX = 44;   // right
 int minY = 0;    // ceiling
 int maxY = 873;  // floor
 
+//New global variables  FOR PATHING
+int step = 0;
+uint16_t failTime =0;
+float xContainer, yContainer;
+
 double Setpoint_y, Input_y, Output_y,
     Setpoint_x, Input_x, Output_x,
     Setpoint_theta, Input_theta, Output_theta;
@@ -88,4 +93,93 @@ float getAngleFromHead() {
     // Serial.println(angle);
   }
   return angle;
+}
+
+//Make sure to replace
+// xPos = x position of trolley
+// yPos = y position of trolley
+// angle = angle input
+
+//// FOR PATHING ////
+int pathAtoB (float xPos, float yPos, float xContainer, float yContainer){
+    if (step==0) {    
+        Serial.println("Step = 0");
+        //If at start position
+        if (0.28<xPos && xPos<0.32 && 0.48<yPos && yPos<0.52){ //put the right values
+            step=1;
+            Serial.println("Trolley is at the start position");
+        } else {
+            Serial.println("Not in start position");
+        }
+        delay(2000);
+    } 
+
+    // Move to above qauy
+    if (step==1) {
+        Setpoint_x = 0.9;
+        if (0.88>xPos || xPos>0.92) {    //If trolley is not above container. pm 2 cm
+           failTime = millis();
+           //Serial.println("Trolley is not above container.");
+        } else if (millis() > failTime + 300) { //If head has been above container for 0.5s 
+           Serial.println("Trolley is above container.");
+           step = 2;
+           Serial3.println("M1");   
+           Serial.println("//Step1 passed");
+       }
+       delay(5000);
+    }
+
+    // Lower head onto container
+    if (step==2) {
+        Serial.println("Step = 2, lower head onto container");
+        Setpoint_y = 1.15;
+        if (yPos<1.15) {
+            failTime = millis();
+        } else if (millis() > failTime + 400) {
+            step=4;
+            Serial.println("Else if step=4");
+        }
+        delay(5000);
+    }
+
+    // Hoist contrainer
+    if (step==3) {
+        Serial.println("Step = 3, move to safety point");
+        Setpoint_y = 0.9;
+        if (yPos < 0.9) {        
+            step=4;
+            Serial.println("//Step3 passed");
+        }
+        delay(5000);
+    }
+
+    // Move above ship
+    if (step==4) {
+        Serial.println("Step = 4, move above ship");
+        Setpoint_x = 3;
+        if (2.90>xContainer || xContainer>3.10 || 2.90>xPos ||xPos>3.10){      //If not within position
+            failTime = millis();
+            // Serial.println("//FAILING STEP 4 criteria ");
+            Serial.println("Crane is not in position.");
+        } else if (millis() > failTime + 1600) {     //This can be changed to something as a function of velocity and position
+            step=5;   
+            Serial.println("//Step4 passed");
+        }
+        delay(5000);
+    }
+
+    // Move down to ship and turn off electro magnet.
+    if (step==5) {
+        Serial.println("Step = 5, move downto ship and turn off electro magnet.");  
+        Setpoint_y = 1.15;
+        if (yPos > 1.15) {
+            Serial3.println("M0");  //Drop load
+            Setpoint_y = 0.5; // Go back up
+            step=7;
+            Serial.println("//PATH A TO B DONE!");
+        }
+        delay(5000);
+    }
+
+    return step;
 }

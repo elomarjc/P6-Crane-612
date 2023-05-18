@@ -120,7 +120,7 @@ void setup() {
 
   Serial.println(String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
   //   Serial3.println("M0");  // turn off the magnet
-  Serial3.println("M1");  // turn on the magnet
+  // Serial3.println("M1");  // turn on the magnet
   Setpoint_y = 0.3;
   Setpoint_x = 0.5;
   Setpoint_theta = 0;
@@ -138,9 +138,18 @@ void loop() {
 
   if (time - lastTime >= sampletime) {
     //readInput();
+    
     Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
     Input_theta = getAngleFromHead();
     Input_y = (double)map(analogRead(pin_pos_y), minY, maxY, 0, 133) / 100;
+    
+    //Calculate container position
+    xContainer  = Input_x+(sin((Input_theta*PI)/180))*Input_y;
+    yContainer = (cos((Input_theta*PI)/180))*Input_y; 
+    
+    pathAtoB(Input_x,Input_y,xContainer,yContainer);
+
+    //Calculate PWM using PID
     xPID.Compute();
     thetaPID.Compute();
     yPID.Compute();
@@ -185,7 +194,7 @@ void loop() {
       analogWrite(pin_pwm_x, PWMcurrent * 255);
     }
 
-    Serial.print(Input_theta + String(";"));
+    Serial.println(String("x pos: ") + String(Input_x) + String(", ") + String("x container: ") + String(xContainer));
     // Serial.println(
     //     String("Angle: ") + Input_theta +
     //     String("\t angle current: ") + Output_theta +
