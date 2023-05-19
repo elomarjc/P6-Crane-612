@@ -2,7 +2,7 @@
 #include "pinDefinitions.h"
 
 //// VARIABLES ////
-float angleOffset = 0.63;      // [deg]
+float angleOffset = -1.33;      // [deg]
 unsigned long sampletime = 10; // [ms]
 // Define these based on values given in positionalValues() in Simple_gantry_code.ino
 int minX = 855; // left
@@ -28,7 +28,7 @@ double Setpoint_y, Input_y, Output_y,
 // experimental K-values
 double Kp_y = 2, Ki_y = 0, Kd_y = 12.96;
 double Kp_x = 1.59, Ki_x = 0, Kd_x = 1.15;
-double Kp_theta = 0.9, Ki_theta = 0, Kd_theta = 0.45;
+double Kp_theta = 3, Ki_theta = 0, Kd_theta = 1.5;  //0.59
 
 // double minCurrenty_up = -3.4, minCurrenty_down = 0.74,  // [A]
 //     minCurrentx_left = 2, minCurrentx_right = -2;
@@ -84,7 +84,7 @@ void angleCorrection()
 {
   Serial.println("--- Correcting angle ---");
   float angleSum = 0;
-  int n = 1000;
+  int n = 20;
   int i = 0;
   while (i < n)
   {
@@ -107,11 +107,17 @@ float getAngleFromHead()
   {
     String angleData = Serial3.readStringUntil('\n');
     angle = angleData.toFloat() - angleOffset; // [deg]
-    angle = angle * 3.141592 / 180;            // converting angle from [deg] to [rad]
+    angle = angle * PI / 180;            // converting angle from [deg] to [rad]
+    
+    if (abs(angle)<0.0174532925) {
+      angle = 0;
+    }
     // Serial.println(angle);
   }
   return angle;
 }
+
+
 
 // Make sure to replace
 //  xPos = x position of trolley
@@ -121,44 +127,29 @@ float getAngleFromHead()
 //// FOR PATHING ////
 int pathAtoB(float xPos, float yPos, float xContainer, float yContainer)
 {
+  // Move to above qauy
   if (step == 0)
   {
-    Serial.println("Step = 0");
-    // If at start position
-    if (0.20 < xPos && xPos < 0.40 && 0.35 < yPos && yPos < 0.60)
-    { // put the right values
-      step = 1;
-      Serial.println("Trolley is at the start position");
-    }
-    else
-    {
-      Serial.println("Not in start position");
-    }
-  }
-
-  // Move to above qauy
-  if (step == 1)
-  {
     Setpoint_x = 0.5;
-    if (0.40 > xPos || xPos > 0.55 || 0.40 > xContainer || xContainer > 0.55)
+    Setpoint_y = 0.7;
+    if (0.40 > xPos || xPos > 0.60 || 0.40 > xContainer || xContainer > 0.60)
     { // If trolley is not above container. pm 2 cm
       failTime = millis();
       // Serial.println("Trolley is not above container.");
     }
-    else if (millis() > failTime + 1000)
-    { // If head has been above container for 0.5s
-      Serial.println("Trolley is above container.");
-      step = 2;
-      Serial.println("//Step1 passed");
+    else if (millis() > failTime + 2000)    
+    { // If head has been above container for 0.5s, 1s or 6s
+      //Serial.println("Trolley is above container.");
+      step = 1;
     }
   }
 
   // Lower head onto container
-  if (step == 2)
+  if (step == 1)
   {
-    Serial.println("Step = 2, lower head onto container");
-    Setpoint_y = 1.17;
-    if (yPos < 1.17)
+    //Serial.println("Step = 2, lower head onto container");
+    Setpoint_y = 1.20;
+    if (yPos < 1.20)
     {
       failTime = millis();
     }
@@ -166,51 +157,49 @@ int pathAtoB(float xPos, float yPos, float xContainer, float yContainer)
     { // 400
       Serial3.println("M1");
       magnet_sw = 1;
-      step = 3;
+      step = 2;
     }
   }
 
   // Hoist contrainer
-  if (step == 3)
+  if (step == 2)
   {
-    Serial.println("Step = 3, move to safety point");
+    //Serial.println("Step = 3, move to safety point");
     Setpoint_y = 0.7;
     if (yPos == 0.7)
     {
-      step = 4;
-      Serial.println("//Step3 passed");
+      step = 3;
+      //Serial.println("//Step3 passed");
     }
   }
 
   // Move above ship
-  if (step == 4)
+  if (step == 3)
   {
-    Serial.println("Step = 4, move above ship");
-    Setpoint_x = 3;
-    if (2.90 > xContainer || xContainer > 3.10 || 2.90 > xPos || xPos > 3.10)
-    { // If not within position
+    //Serial.println("Step = 4, move above ship");
+    Setpoint_x = 2.95;
+    if (2.90 > xPos || xPos > 3)
+    { // if not within position
       failTime = millis();
-      Serial.println("Crane is not in position.");
     }
     else if (millis() > failTime + 6000)
-    { // This can be changed to something as a function of velocity and position
-      step = 5;
-      Serial.println("//Step4 passed");
+    { // wait 6 s before going down
+      step = 4;
     }
   }
 
   // Move down to ship and turn off electro magnet.
-  if (step == 5)
+  if (step == 4)
   {
-    Serial.println("Step = 5, move downto ship and turn off electro magnet.");
+    //Serial.println("Step = 5, move downto ship and turn off electro magnet.");
     Setpoint_y = 1.30;
     if (yPos == 1.20)
     {
       Serial3.println("M0"); // Drop load
       magnet_sw = 0;
       Setpoint_y = 0.7; // Go back up
-      step = 6;
-      Serial.println("//PATH A TO B DONE!");
+      step = 5;
+      //Serial.println("//PATH A TO B DONE!");
     }
   }
 

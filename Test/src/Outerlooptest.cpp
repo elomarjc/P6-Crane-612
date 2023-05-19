@@ -63,11 +63,12 @@ void setup()
   digitalWrite(pin_enable_y, HIGH);
   digitalWrite(pin_enable_x, HIGH);
 
-  // angleCorrection();
-  // delay(10000);
+  Serial3.println("M0");  // turn off the magnet
+  magnet_sw = 0;
+  //angleCorrection();
+  //delay(5000);
 
   Serial.println(String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
-  //   Serial3.println("M0");  // turn off the magnet
   // Serial3.println("M1");  // turn on the magnet
   Setpoint_y = 0.5;
   Setpoint_x = 0.3;
@@ -87,22 +88,23 @@ void loop()
     Input_y = (double)map(analogRead(pin_pos_y), minY, maxY, 0, 133) / 100;
 
     // Calculate container position
-    xContainer = Input_x + (sin((Input_theta * PI) / 180)) * Input_y;
+    xContainer = Input_x + (sin(Input_theta)) * Input_y;
     yContainer = (cos((Input_theta * PI) / 180)) * Input_y;
 
-    //pathAtoB(Input_x, Input_y, xContainer, yContainer);
-    pathBtoA(Input_x, Input_y, xContainer, yContainer);
+    pathAtoB(Input_x, Input_y, xContainer, yContainer);
+    //pathBtoA(Input_x, Input_y, xContainer, yContainer);
 
     // Calculate PWM using PID
     if (magnet_sw == 0)
     {
-      yPID.SetTunings(6, 0, 12.96, 1);
-      xPID.SetTunings(1.59, 0, 0.5, 1);
+      yPID.SetTunings(6.1, 0, 12.96, 1);
+      //xPID.SetTunings(1.59, 0, 1.15, 1);
+      //thetaPID.SetTunings(2, 0, 0.45, 1);
     }
     else
     {
       yPID.SetTunings(3, 0, 12.96, 1);   // Kp=2
-      xPID.SetTunings(1.59, 0, 1.15, 1);
+      //xPID.SetTunings(1.59, 0, 1.15, 1); // Kp=1.59
     }
 
     xPID.Compute();
@@ -151,7 +153,7 @@ void loop()
       analogWrite(pin_pwm_x, PWMcurrent * 255);
     }
 
-    Serial.println(String("x pos: ") + String(Input_x) + String(", ") + String("x container: ") + String(xContainer) + String(", ") + String("y pos: ") + String(Input_y) + String(", ") + String("y set: ") + String(Setpoint_y) + String(", ") + String("x set: ") + String(Setpoint_x));
+    Serial.println(String("x pos: ") + String(Input_x) + String(", ") + String("x container: ") + String(xContainer) + String(", ") + String("y pos: ") + String(Input_y) + String(", ") + String("y set: ") + String(Setpoint_y) + String(", ") + String("x set: ") + String(Setpoint_x)+ String(", ")+String("Angle: ") + String((Input_theta*180)/PI));
     
     
     // Serial.println(
