@@ -14,6 +14,9 @@ bool flag = true;
 int state = 0;
 unsigned long stateTime = 20000;
 
+low_pass xVelLowpass           = low_pass(0.1);           // Lowpass filter tau = 30 ms.
+forwardEuler xTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the y-axis
+
 PID_v1 yPID(&Input_y, &Output_y, &Setpoint_y, Kp_y, Ki_y, Kd_y, DIRECT);
 PID_v1 xPID(&Input_x, &Output_x, &Setpoint_x, Kp_x, Ki_x, Kd_x, REVERSE);                             // wire is put on backwards
 PID_v1 thetaPID(&Input_theta, &Output_theta, &Setpoint_theta, Kp_theta, Ki_theta, Kd_theta, REVERSE); // reverse = match xPID
@@ -89,8 +92,9 @@ void loop()
   time = millis();
 
   if (time - lastTime >= sampletime) {
-    int start = millis();
-    Serial.println(String("Start time: ")+start);
+    unsigned long start = micros();
+    //Serial.println(String("Start time: ")+start);
+
     //readInput();
     Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
     Input_theta = getAngleFromHead();
@@ -99,6 +103,8 @@ void loop()
     // Calculate container position
     xContainer = Input_x + (sin(Input_theta)) * Input_y;
     yContainer = (cos((Input_theta * PI) / 180)) * Input_y;
+
+    float trolleyVelocity = xVelLowpass.update(xTrolleyVelCal.update(Input_x));
 
     pathAtoB(Input_x, Input_y, xContainer, yContainer);
     //pathBtoA(Input_x, Input_y, xContainer, yContainer);
@@ -151,18 +157,35 @@ void loop()
     double currentX = Output_x - Output_theta;
     if (currentX > 0)
     { // going left, PWM>0.5
-      currentX = min(currentX + minCurrentx_left, currentLimitx_left);
+      
+      if (abs(trolleyVelocity) < 0.45) {
+        currentX = min(currentX + minCurrentx_left, currentLimitx_left);
+      }
+      else {
+        currentX = min(currentX, currentLimitx_left);
+      }
+    
+      //currentX = min(currentX + minCurrentx_left, currentLimitx_left);
       double PWMcurrent = (double)map(currentX * 100, currentLimitx_right * 100, currentLimitx_left * 100, 0.1 * 100, 0.9 * 100) / 100;
       analogWrite(pin_pwm_x, PWMcurrent * 255);
     }
     else if (currentX < 0)
     { // going right, PWM<0.5
-      currentX = max(currentX + minCurrentx_right, currentLimitx_right);
+
+      
+      if (abs(trolleyVelocity) < 0.45) {
+        currentX = max(currentX + minCurrentx_right, currentLimitx_right);
+      }
+      else {
+        currentX = max(currentX, currentLimitx_right);
+      }
+
+      //currentX = max(currentX + minCurrentx_right, currentLimitx_right);
       double PWMcurrent = (double)map(currentX * 100, currentLimitx_right * 100, currentLimitx_left * 100, 0.1 * 100, 0.9 * 100) / 100;
       analogWrite(pin_pwm_x, PWMcurrent * 255);
     }
 
-    Serial.print(Input_x + String(";"));
+    //Serial.print(Input_x + String(";"));
     // Serial.println(
     //     String("Angle: ") + Input_theta +
     //     String("\t angle current: ") + Output_theta +
@@ -172,7 +195,8 @@ void loop()
     //     String("\t PWM: ") + ((double)map(currentX * 100, currentLimitx_right * 100, currentLimitx_left * 100, 0.1 * 100, 0.9 * 100) / 100));
 
     lastTime = time;
-    Serial.println(String("End time: ") + (millis()-start));
+    Serial.println(String("total loop time in micros: ") + (micros() - start) );
+    Serial.println(String("angle: ") + Input_theta);
   }
 
   // if (time - lastTimeTest1 >= 20000) {
@@ -199,30 +223,30 @@ void loop()
   //   lastTimeTest1 = time;
   // }
 
-  switch (state) {
-    case 0:
-      // collectload();
-      Setpoint_y = 0.2;
-      Setpoint_x = 1;
-      Serial3.println("M1");  // turn on the magnet
-      if (millis() > (state + 1) * stateTime) {
-        state++;
-      }
-      break;
-    case 1:
-      newSetpoint_x(2);
-      if (millis() > (state + 1) * stateTime) {
-        state++;
-      }
-      break;
-    case 2:
-      Setpoint_y = 1.2;
-      if (millis() > (state + 1) * stateTime) {
-        dropload();
-        Setpoint_y = 0.2;
-        Setpoint_x = 1;
-        state = 0;
-      }
-      break;
-  }
+  // switch (state) {
+  //   case 0:
+  //     // collectload();
+  //     Setpoint_y = 0.2;
+  //     Setpoint_x = 1;
+  //     Serial3.println("M1");  // turn on the magnet
+  //     if (millis() > (state + 1) * stateTime) {
+  //       state++;
+  //     }
+  //     break;
+  //   case 1:
+  //     newSetpoint_x(2);
+  //     if (millis() > (state + 1) * stateTime) {
+  //       state++;
+  //     }
+  //     break;
+  //   case 2:
+  //     Setpoint_y = 1.2;
+  //     if (millis() > (state + 1) * stateTime) {
+  //       dropload();
+  //       Setpoint_y = 0.2;
+  //       Setpoint_x = 1;
+  //       state = 0;
+  //     }
+  //     break;
+  // }
 }

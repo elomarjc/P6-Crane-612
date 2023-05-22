@@ -34,7 +34,7 @@ double Kp_theta = 0.9, Ki_theta = 0, Kd_theta = 0.45;
 //     minCurrentx_left = 2, minCurrentx_right = -2;
 
 double minCurrenty_up = -3.4, minCurrenty_down = 0.8, // [A]
-    minCurrentx_left = 2, minCurrentx_right = -2;
+    minCurrentx_left = 2, minCurrentx_right = -2;    //2 and -2
 
 // double minPWMy_up = 0.33, minPWMy_down = 0.54,
 //       minPWMx_left = 0.6, minPWMx_right = 0.4;
@@ -137,7 +137,7 @@ int pathAtoB(float xPos, float yPos, float xContainer, float yContainer)
       failTime = millis();
       // Serial.println("Trolley is not above container.");
     }
-    else if (millis() > failTime + 2000)    
+    else if (millis() > failTime + 2000)   //2000 oder 400
     { // If head has been above container for 0.5s, 1s or 6s
       //Serial.println("Trolley is above container.");
       step = 1;
@@ -212,7 +212,7 @@ int pathBtoA(float xPos, float yPos, float xContainer, float yContainer)
   if (step == 0)
   {
     Serial.println("Step = 0");
-    Setpoint_x = 2.95;
+    Setpoint_x = 3;
     Setpoint_y = 0.7;
     if (2.90 > xContainer || xContainer > 3.10 || 2.90 > xPos || xPos > 3.10)
     { // if not within position
