@@ -5,10 +5,10 @@
 float angleOffset = -1.33;      // [deg]
 unsigned long sampletime = 10; // [ms]
 // Define these based on values given in positionalValues() in Simple_gantry_code.ino
-int minX = 855; // left
-int maxX = 44;  // right
-int minY = 0;   // ceiling
-int maxY = 873; // floor
+int minX = 865;  // left
+int maxX = 53;   // right
+int minY = 0;    // ceiling
+int maxY = 873;  // floor
 
 // New global variables  FOR PATHING
 int step = 0;
@@ -22,13 +22,13 @@ double Setpoint_y, Input_y, Output_y,
 
 // calculated K-values
 // double Kp_y = 32.4, Ki_y = 0, Kd_y = 12.96;
-// double Kp_x = 1.59, Ki_x = 0, Kd_x = 1.15;
+double Kp_x = 1.59, Ki_x = 0, Kd_x = 1.15;
 // double Kp_theta = 9, Ki_theta = 0, Kd_theta = 4.5;
 
 // experimental K-values
-double Kp_y = 2, Ki_y = 0, Kd_y = 12.96;
-double Kp_x = 1.59, Ki_x = 0, Kd_x = 1.15;
-double Kp_theta = 3, Ki_theta = 0, Kd_theta = 1.5;  //0.59
+double Kp_y = 1.5, Ki_y = 0, Kd_y = 12.96;
+// double Kp_x = 1.59, Ki_x = 0, Kd_x = 2.3;
+double Kp_theta = 0.9, Ki_theta = 0, Kd_theta = 0.45;
 
 // double minCurrenty_up = -3.4, minCurrenty_down = 0.74,  // [A]
 //     minCurrentx_left = 2, minCurrentx_right = -2;

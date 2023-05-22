@@ -1,6 +1,13 @@
 // Include libraries
 #include <Arduino.h>
+#include <PID_v1.h>
+#include <Wire.h>
 #include <functions.h>
+#include <Wire.h>
+#include "sigProc.h"
+#include "path.h"
+#include "pathVertical.h"
+#include "math.h"
 #include "pinDefinitions.h"
 #include <PID_v1.h>
 
@@ -69,20 +76,26 @@ void setup()
   //delay(5000);
 
   Serial.println(String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
-  // Serial3.println("M1");  // turn on the magnet
-  Setpoint_y = 0.5;
-  Setpoint_x = 0.3;
+  //   Serial3.println("M0");  // turn off the magnet
+  Serial3.println("M1");  // turn on the magnet
+  Setpoint_y = 0.2;
+  Setpoint_x = 2;
   Setpoint_theta = 0;
+
+  #ifdef DYNAMICNOTCHFILTER
+    // Initial values
+    angleNotchFilter = NotchFilter(2.35, 2, Ts / 1e6);
+  #endif
+
+
 }
 
 void loop()
 {
   time = millis();
 
-  if (time - lastTime >= sampletime)
-  {
-    // readInput();
-
+  if (time - lastTime >= sampletime) {
+    //readInput();
     Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
     Input_theta = getAngleFromHead();
     Input_y = (double)map(analogRead(pin_pos_y), minY, maxY, 0, 133) / 100;
@@ -153,9 +166,7 @@ void loop()
       analogWrite(pin_pwm_x, PWMcurrent * 255);
     }
 
-    Serial.println(String("x pos: ") + String(Input_x) + String(", ") + String("x container: ") + String(xContainer) + String(", ") + String("y pos: ") + String(Input_y) + String(", ") + String("y set: ") + String(Setpoint_y) + String(", ") + String("x set: ") + String(Setpoint_x)+ String(", ")+String("Angle: ") + String((Input_theta*180)/PI));
-    
-    
+    Serial.print(Input_x + String(";"));
     // Serial.println(
     //     String("Angle: ") + Input_theta +
     //     String("\t angle current: ") + Output_theta +
@@ -191,30 +202,30 @@ void loop()
   //   lastTimeTest1 = time;
   // }
 
-  // switch (state) {
-  //   case 0:
-  //     // collectload();
-  //     Setpoint_y = 0.2;
-  //     Setpoint_x = 1;
-  //     Serial3.println("M1");  // turn on the magnet
-  //     if (millis() > (state + 1) * stateTime) {
-  //       state++;
-  //     }
-  //     break;
-  //   case 1:
-  //     newSetpoint_x(2);
-  //     if (millis() > (state + 1) * stateTime) {
-  //       state++;
-  //     }
-  //     break;
-  //   case 2:
-  //     Setpoint_y = 1.2;
-  //     if (millis() > (state + 1) * stateTime) {
-  //       dropload();
-  //       Setpoint_y = 0.2;
-  //       Setpoint_x = 1;
-  //       state = 0;
-  //     }
-  //     break;
-  // }
+  switch (state) {
+    case 0:
+      // collectload();
+      Setpoint_y = 0.2;
+      Setpoint_x = 1;
+      Serial3.println("M1");  // turn on the magnet
+      if (millis() > (state + 1) * stateTime) {
+        state++;
+      }
+      break;
+    case 1:
+      newSetpoint_x(2);
+      if (millis() > (state + 1) * stateTime) {
+        state++;
+      }
+      break;
+    case 2:
+      Setpoint_y = 1.2;
+      if (millis() > (state + 1) * stateTime) {
+        dropload();
+        Setpoint_y = 0.2;
+        Setpoint_x = 1;
+        state = 0;
+      }
+      break;
+  }
 }

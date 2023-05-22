@@ -10,8 +10,8 @@ int startPos = -1;
 int finalPos = 0;
 int time = millis();
 // Define these based on values given in positionalValues()
-int minX = 855;  // left
-int maxX = 44;   // right
+int minX = 865;  // left
+int maxX = 53;   // right
 int minY = 0;    // ceiling
 int maxY = 873;  // floor
 
