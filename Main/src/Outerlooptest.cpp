@@ -1,15 +1,9 @@
 // Include libraries
 #include <Arduino.h>
 #include <PID_v1.h>
-#include <Wire.h>
 #include <functions.h>
-#include <Wire.h>
 #include "sigProc.h"
-#include "path.h"
-#include "pathVertical.h"
-#include "math.h"
 #include "pinDefinitions.h"
-#include <PID_v1.h>
 
 //// VARIABLES  ////
 unsigned long time;
