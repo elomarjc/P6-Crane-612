@@ -90,7 +90,7 @@ void loop()
 
   if (time - lastTime >= sampletime) {
     int start = millis();
-    Serial.print(start)
+    Serial.println(String("Start time: ")+start);
     //readInput();
     Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
     Input_theta = getAngleFromHead();
@@ -172,7 +172,7 @@ void loop()
     //     String("\t PWM: ") + ((double)map(currentX * 100, currentLimitx_right * 100, currentLimitx_left * 100, 0.1 * 100, 0.9 * 100) / 100));
 
     lastTime = time;
-    Serial.println(millis()-start);
+    Serial.println(String("End time: ") + (millis()-start));
   }
 
   // if (time - lastTimeTest1 >= 20000) {
