@@ -1,23 +1,24 @@
 // Include libraries
 #include <Arduino.h>
-#include <functions.h>
+#include <PID_v1.h>
 #include <Wire.h>
-#include "sigProc.h"
+#include <functions.h>
+
+#include "dataStructures.h"
+#include "math.h"
 #include "path.h"
 #include "pathVertical.h"
-#include "math.h"
 #include "pinDefinitions.h"
-#include "dataStructures.h"
-#include <PID_v1.h>
+#include "sigProc.h"
 
 // Loop sample period
-uint32_t Ts = 1e6 / 100; // 100 Hz
+uint32_t Ts = 1e6 / 100;  // 100 Hz
 bool magnet_sw;
 
 #define DYNAMICNOTCHFILTER
 
-low_pass xPosLowpasss = low_pass(0.03); // Lowpass filter tau = 30 ms.
-low_pass angleLowpass = low_pass(0.03); // Lowpass filter tau = 30 ms.
+low_pass xPosLowpasss = low_pass(0.03);  // Lowpass filter tau = 30 ms.
+low_pass angleLowpass = low_pass(0.03);  // Lowpass filter tau = 30 ms.
 low_pass angleHighpass = low_pass(1);
 
 #ifdef DYNAMICNOTCHFILTER
@@ -40,20 +41,15 @@ IIR angleNotchFilter = IIR(a, b);
 #endif
 
 // Convert wire length to 2nd pendulum frequency
-float wirelengthToFrequency(float length, bool withContainer)
-{
-  if (withContainer)
-  {
+float wirelengthToFrequency(float length, bool withContainer) {
+  if (withContainer) {
     return 3.85 - atan(6.5 * length);
-  }
-  else
-  {
+  } else {
     return 2.85 - atan(5 * length) * 0.51;
   }
 }
 
-void readInput()
-{
+void readInput() {
   Input_x = analogRead(pin_pos_x);
   Input_theta = getAngleFromHead();
 
@@ -63,10 +59,10 @@ void readInput()
   Input_theta = angleLowpass.update(Input_theta);
   Input_theta = Input_theta - angleHighpass.update(Input_theta);
 
-  // Update notch filter parameters
-  #ifdef DYNAMICNOTCHFILTER
-    angleNotchFilter.updateFrequency(wirelengthToFrequency(Input_y, magnet_sw));
-  #endif
+// Update notch filter parameters
+#ifdef DYNAMICNOTCHFILTER
+  angleNotchFilter.updateFrequency(wirelengthToFrequency(Input_y, magnet_sw));
+#endif
 
   Input_theta = angleNotchFilter.update(Input_theta);
   Input_x = (double)map(Input_x, minX, maxX, 0, 400) / 100;
@@ -134,25 +130,23 @@ void setup() {
   // delay(10000);
 
   Serial.println(String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
-  //   Serial3.println("M0");  // turn off the magnet
+  // Serial3.println("M0");  // turn off the magnet
   Serial3.println("M1");  // turn on the magnet
   Setpoint_y = 0.2;
   Setpoint_x = 2;
   Setpoint_theta = 0;
 
-  #ifdef DYNAMICNOTCHFILTER
-    // Initial values
-    angleNotchFilter = NotchFilter(2.35, 2, Ts / 1e6);
-  #endif
-
-
+#ifdef DYNAMICNOTCHFILTER
+  // Initial values
+  angleNotchFilter = NotchFilter(2.35, 2, Ts / 1e6);
+#endif
 }
 
 void loop() {
   time = millis();
 
   if (time - lastTime >= sampletime) {
-    //readInput();
+    // readInput();
     Input_x = (double)map(analogRead(pin_pos_x), minX, maxX, 0, 400) / 100;
     Input_theta = getAngleFromHead();
     Input_y = (double)map(analogRead(pin_pos_y), minY, maxY, 0, 133) / 100;
@@ -196,7 +190,7 @@ void loop() {
       analogWrite(pin_pwm_x, PWMcurrent * 255);
     }
 
-    Serial.print(Input_x + String(";"));
+    // Serial.print(Input_theta + String(";"));
     // Serial.println(
     //     String("Angle: ") + Input_theta +
     //     String("\t angle current: ") + Output_theta +
@@ -220,42 +214,43 @@ void loop() {
   //   lastTimeTest1 = time;
   // }
 
-  // if (time - lastTimeTest1 >= 10000) {
-  //   if (flag) {
-  //     Setpoint_y = 1.1;
-  //     // Serial.println("here1");
-  //   } else {
-  //     Setpoint_y = 0.1;
-  //     // Serial.println("here2");
-  //   }
-  //   flag = !flag;
-  //   lastTimeTest1 = time;
-  // }
-
-  switch (state) {
-    case 0:
-      // collectload();
-      Setpoint_y = 0.2;
-      Setpoint_x = 1;
-      Serial3.println("M1");  // turn on the magnet
-      if (millis() > (state + 1) * stateTime) {
-        state++;
-      }
-      break;
-    case 1:
-      newSetpoint_x(2);
-      if (millis() > (state + 1) * stateTime) {
-        state++;
-      }
-      break;
-    case 2:
-      Setpoint_y = 1.2;
-      if (millis() > (state + 1) * stateTime) {
-        dropload();
-        Setpoint_y = 0.2;
-        Setpoint_x = 1;
-        state = 0;
-      }
-      break;
+  if (time - lastTimeTest1 >= 20000) {
+    if (flag) {
+      Setpoint_y = 1.19;
+      // Serial.println("here1");
+    } else {
+      Setpoint_y = 0.19;
+      // Serial.println("here2");
+    }
+    flag = !flag;
+    lastTimeTest1 = time;
   }
+
+  // switch (state) {
+  //   case 0:
+  //     // collectload();
+  //     Setpoint_y = 0.2;
+  //     Setpoint_x = 2;
+  //     Serial3.println("M1");  // turn on the magnet
+  //     if (millis() > (state + 1) * stateTime) {
+  //       state++;
+  //     }
+  //     break;
+  //   case 1:
+  //     newSetpoint_x(3);
+  //     if (millis() > (state + 1) * stateTime) {
+  //       state++;
+  //     }
+  //     break;
+  //   case 2:
+  //     Setpoint_y = 1.19;
+  //     if (millis() > (state + 1) * stateTime) {
+  //       dropload();
+  //       Setpoint_y = 0.2;
+  //       Setpoint_x = 2;
+  //       delay(500);
+  //       Serial3.println("M1");  // turn on the magnet
+  //     }
+  //     break;
+  // }
 }
