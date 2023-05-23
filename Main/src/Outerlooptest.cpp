@@ -16,6 +16,7 @@ unsigned long stateTime = 20000;
 
 low_pass xVelLowpass           = low_pass(0.1);           // Lowpass filter tau = 30 ms.
 forwardEuler xTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the y-axis
+forwardEuler yTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the x-axis
 
 PID_v1 yPID(&Input_y, &Output_y, &Setpoint_y, Kp_y, Ki_y, Kd_y, DIRECT);
 PID_v1 xPID(&Input_x, &Output_x, &Setpoint_x, Kp_x, Ki_x, Kd_x, REVERSE);                             // wire is put on backwards
@@ -72,19 +73,12 @@ void setup()
   //angleCorrection();
   //delay(5000);
 
-  Serial.println(String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
+  // Serial.println(String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
   //   Serial3.println("M0");  // turn off the magnet
-  Serial3.println("M1");  // turn on the magnet
+  // Serial3.println("M1");  // turn on the magnet
   Setpoint_y = 0.2;
   Setpoint_x = 2;
   Setpoint_theta = 0;
-
-  #ifdef DYNAMICNOTCHFILTER
-    // Initial values
-    angleNotchFilter = NotchFilter(2.35, 2, Ts / 1e6);
-  #endif
-
-
 }
 
 void loop()
@@ -105,21 +99,19 @@ void loop()
     yContainer = (cos((Input_theta * PI) / 180)) * Input_y;
 
     float trolleyVelocity = xVelLowpass.update(xTrolleyVelCal.update(Input_x));
+    float hoistVelocity = yTrolleyVelCal.update(Input_y);
 
     pathAtoB(Input_x, Input_y, xContainer, yContainer);
     //pathBtoA(Input_x, Input_y, xContainer, yContainer);
 
-    // Calculate PWM using PID
+    // // Calculate PWM using PID
     if (magnet_sw == 0)
     {
-      yPID.SetTunings(6.1, 0, 12.96, 1);
-      //xPID.SetTunings(1.59, 0, 1.15, 1);
-      //thetaPID.SetTunings(2, 0, 0.45, 1);
+      yPID.SetTunings(6.7, 0, 12.96, 1);
     }
     else
     {
-      yPID.SetTunings(3, 0, 12.96, 1);   // Kp=2
-      //xPID.SetTunings(1.59, 0, 1.15, 1); // Kp=1.59
+      yPID.SetTunings(6.1, 0, 12.96, 1);   // Kp=2
     }
 
     xPID.Compute();
@@ -131,7 +123,16 @@ void loop()
     if (currentY > 0)
     { // going down, PWM>0.5, Current>0
       // Serial.println(currentY + String(" here1"));
+
+      // if (abs(hoistVelocity) < 0.6) {
+      //   currentY = min(currentY + minCurrenty_down, currentLimity_down);
+      // }
+      // else {
+      //   currentY = min(currentY, currentLimity_down);
+      // }
+
       currentY = min(currentY + minCurrenty_down, currentLimity_down);
+
       // Serial.println(currentY + String(" here1"));
       double PWMcurrent = (double)map(currentY * 100, currentLimity_up * 100, currentLimity_down * 100, 0.1 * 100, 0.9 * 100) / 100;
       // Serial.println(currentY + String(" here1 ") + PWMcurrent);
@@ -140,6 +141,14 @@ void loop()
     else if (currentY < 0)
     { // going up, PWM<0.5, Current<0
       // Serial.println(currentY + String(" here2"));
+      
+      // if (abs(hoistVelocity) < 0.6) {
+      //   currentY = max(currentY + minCurrenty_up, currentLimity_up);
+      // }
+      // else {
+      //   currentY = max(currentY, currentLimity_up);
+      // }
+      
       currentY = max(currentY + minCurrenty_up, currentLimity_up);
       // Serial.println(currentY + String(" here2"));
       double PWMcurrent = (double)map(currentY * 100, currentLimity_up * 100, currentLimity_down * 100, 0.1 * 100, 0.9 * 100) / 100;
@@ -158,7 +167,7 @@ void loop()
     if (currentX > 0)
     { // going left, PWM>0.5
       
-      if (abs(trolleyVelocity) < 0.45) {
+      if (abs(trolleyVelocity) < 0.6) {
         currentX = min(currentX + minCurrentx_left, currentLimitx_left);
       }
       else {
@@ -173,7 +182,7 @@ void loop()
     { // going right, PWM<0.5
 
       
-      if (abs(trolleyVelocity) < 0.45) {
+      if (abs(trolleyVelocity) < 0.6) {
         currentX = max(currentX + minCurrentx_right, currentLimitx_right);
       }
       else {
@@ -195,10 +204,10 @@ void loop()
     //     String("\t PWM: ") + ((double)map(currentX * 100, currentLimitx_right * 100, currentLimitx_left * 100, 0.1 * 100, 0.9 * 100) / 100));
 
     lastTime = time;
-    Serial.println(String("total loop time in micros: ") + (micros() - start) );
-    Serial.println(String("angle: ") + Input_theta);
+    // Serial.println(String("total loop time in micros: ") + (micros() - start) );
+    // Serial.println(String("angle: ") + Input_theta);
+    Serial.println(String("setpoint X: ") + Setpoint_x + String(", input X: ") + Input_x + String(", setpoint Y: ") + Setpoint_y + String(", input Y: ") + Input_y + String(", angle: ") + Input_theta + String(", y raw: ") + analogRead(pin_pos_y));
   }
-
   // if (time - lastTimeTest1 >= 20000) {
   //   if (flag) {
   //     Setpoint_x = 0.5;
