@@ -26,11 +26,22 @@ hold off
 
 %% Acceptance test 4
 clear figure
-load('Acceptance test 4_data.mat');
+% load('Acceptance test 4_data.mat');
 hold on % combines everything into one figure
-plot(t,Position, 'red') % controller step response
+plot(t,movmean(Position, [0 10]), 'red') % controller step response
 xlabel('Time [s]');
 ylabel('Position [m]');
 title('Technical requirement 4 acceptance test')
 legend('Step response X','Location', 'southeast')
+hold off
+
+%% Angle sensor test
+clear figure
+hold on % combines everything into one figure
+plot(t_physlet,angle_physlet, 'blue') % controller step response
+plot(t_measurement,angle_measurement, 'red') % controller step response
+xlabel('Time [s]');
+ylabel('Angle [deg]');
+title('Angle sensor linearity')
+legend('Physlet', 'Angle sensor','Location', 'northeast')
 hold off

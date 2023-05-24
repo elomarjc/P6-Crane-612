@@ -1,0 +1,66 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
+{
+    "configurations": [
+        {
+            "name": "PlatformIO",
+            "includePath": [
+                "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/include",
+                "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/src",
+                "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/lib/PID_v1",
+                "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/lib/sigProc",
+                "C:/Users/andre/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "C:/Users/andre/.platformio/packages/framework-arduino-avr/variants/mega",
+                "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/.pio/libdeps/megaatmega2560/Adafruit BusIO",
+                "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/.pio/libdeps/megaatmega2560/Adafruit GFX Library",
+                "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/.pio/libdeps/megaatmega2560/Adafruit SSD1306",
+                "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/include",
+                    "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/src",
+                    "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/lib/PID_v1",
+                    "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/lib/sigProc",
+                    "C:/Users/andre/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "C:/Users/andre/.platformio/packages/framework-arduino-avr/variants/mega",
+                    "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/.pio/libdeps/megaatmega2560/Adafruit BusIO",
+                    "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/.pio/libdeps/megaatmega2560/Adafruit GFX Library",
+                    "c:/Users/andre/Documents/GitHub/P6-Crane-612/Test/.pio/libdeps/megaatmega2560/Adafruit SSD1306",
+                    "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=60107",
+                "ARDUINO_AVR_MEGA2560",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATmega2560__",
+                ""
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "compilerPath": "C:/Users/andre/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe",
+            "compilerArgs": [
+                "-mmcu=atmega2560",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
