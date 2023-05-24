@@ -3,18 +3,19 @@
 #include "pinDefinitions.h"
 
 //// VARIABLES ////
-float angleOffset = -1.33;      // [deg]
-unsigned long sampletime = 10;  // [ms]
+float angleOffset = -1.33;     // [deg]
+unsigned long sampletime = 10; // [ms]
 // Define these based on values given in positionalValues() in Simple_gantry_code.ino
-int minX = 865;  // left
-int maxX = 53;   // right
-int minY = 0;    // ceiling
-int maxY = 873;  // floor
+int minX = 865; // left
+int maxX = 53;  // right
+int minY = 123; // ceiling
+int maxY = 967; // floor
 
 // New global variables  FOR PATHING
 int step = 0;
 uint16_t failTime = 0;
-float xContainer;
+uint16_t grabtime = 0;
+float xContainer, yContainer;
 bool magnet_sw = 0;
 
 double Setpoint_y, Input_y, Output_y,
@@ -27,7 +28,7 @@ double Kp_x = 1.59, Ki_x = 0, Kd_x = 1.15;
 // double Kp_theta = 9, Ki_theta = 0, Kd_theta = 4.5;
 
 // experimental K-values
-double Kp_y = 1.5, Ki_y = 0, Kd_y = 12.96;
+double Kp_y = 6.7, Ki_y = 0, Kd_y = 12.96; // 1.5
 // double Kp_x = 1.59, Ki_x = 0, Kd_x = 2.3;
 double Kp_theta = 0.9, Ki_theta = 0, Kd_theta = 0.45;
 
@@ -113,6 +114,11 @@ int pathAtoB(float xPos, float yPos, float xContainer) {
       Serial3.println("M1");
       magnet_sw = 1;
       step = 2;
+      // grabtime = millis();
+      // if (millis() > grabtime + 200)
+      // {
+      //   step = 2;
+      // }
     }
   }
 
@@ -120,7 +126,8 @@ int pathAtoB(float xPos, float yPos, float xContainer) {
   if (step == 2) {
     // Serial.println("Step = 3, move to safety point");
     Setpoint_y = 0.7;
-    if (yPos == 0.7) {
+    if (yPos == 0.7)
+    {
       step = 3;
       // Serial.println("//Step3 passed");
     }
@@ -157,7 +164,7 @@ int pathBtoA(float xPos, float yPos, float xContainer) {
   // Move to above shipment
   if (step == 0) {
     Serial.println("Step = 0");
-    Setpoint_x = 3;
+    Setpoint_x = 2.97;
     Setpoint_y = 0.7;
     if (2.90 > xContainer || xContainer > 3.10 || 2.90 > xPos || xPos > 3.10) {  // if not within position
       Serial.println("Trolley not in start position");
@@ -171,7 +178,8 @@ int pathBtoA(float xPos, float yPos, float xContainer) {
   if (step == 1) {
     Serial.println("Step = 1, lower head onto container");
     Setpoint_y = 1.20;
-    if (yPos < 1.20) {
+    if (yPos < 1.20)
+    {
       failTime = millis();
     } else if (millis() > failTime + 400) {
       Serial3.println("M1");
@@ -191,28 +199,34 @@ int pathBtoA(float xPos, float yPos, float xContainer) {
   }
 
   // Move above quay
-  if (step == 3) {
+  if (step == 3)
+  {
     Serial.println("Step = 4, move above ship");
     Setpoint_x = 0.5;
-    if (0.40 > xPos || xPos > 0.60 || 0.40 > xContainer || xContainer > 0.60) {  // If trolley is not above container. pm 2 cm
+    if (0.40 > xPos || xPos > 0.60 || 0.40 > xContainer || xContainer > 0.60)
+    { // If trolley is not above container. pm 2 cm
       failTime = millis();
       // Serial.println("Trolley is not above container.");
-    } else if (millis() > failTime + 5000) {  // If head has been above container for 5s
+    }
+    else if (millis() > failTime + 5000)
+    { // If head has been above container for 0.5s
       Serial.println("Trolley is above container.");
       step = 4;
     }
   }
 
   // Move down to quay and turn off electro magnet.
-  if (step == 4) {
+  if (step == 4)
+  {
     Serial.println("Step = 4, move downto ship and turn off electro magnet.");
     Setpoint_y = 1.30;
-    if (yPos == 1.20) {
-      Serial3.println("M0");  // Drop load
+    if (yPos == 1.20)
+    {
+      Serial3.println("M0"); // Drop load
       magnet_sw = 0;
       Setpoint_y = 0.7;  // Go back up
       step = 5;
-      Serial.println("//PATH B TO A DONE!");
+      digitalWrite(pin_enable_x, LOW);
     }
   }
 

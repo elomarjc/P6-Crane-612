@@ -70,17 +70,12 @@ void setup() {
   // angleCorrection();
   // delay(5000);
 
-  Serial.println(String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
+  // Serial.println(String("Y-position: ") + map(analogRead(pin_pos_y), minY, maxY, 0, 133));
   //   Serial3.println("M0");  // turn off the magnet
-  Serial3.println("M1");  // turn on the magnet
+  // Serial3.println("M1");  // turn on the magnet
   Setpoint_y = 0.2;
   Setpoint_x = 2;
   Setpoint_theta = 0;
-
-#ifdef DYNAMICNOTCHFILTER
-  // Initial values
-  angleNotchFilter = NotchFilter(2.35, 2, Ts / 1e6);
-#endif
 }
 
 void loop() {
@@ -99,9 +94,9 @@ void loop() {
     xContainer = Input_x + (sin(Input_theta)) * Input_y;
     yContainer = (cos((Input_theta * PI) / 180)) * Input_y;
 
-    float trolleyVelocity = xVelLowpass.update(xTrolleyVelCal.update(Input_x));
+    float trolleyVelocity = xTrolleyVelCal.update(Input_x);
 
-    pathAtoB(Input_x, Input_y, xContainer, yContainer);
+    pathAtoB(Input_x, Input_y, xContainer);
     // pathBtoA(Input_x, Input_y, xContainer, yContainer);
 
     // Calculate PWM using PID
