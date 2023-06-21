@@ -101,8 +101,8 @@ void loop()
     float trolleyVelocity = xVelLowpass.update(xTrolleyVelCal.update(Input_x));
     float hoistVelocity = yTrolleyVelCal.update(Input_y);
 
-    pathAtoB(Input_x, Input_y, xContainer, yContainer);
-    //pathBtoA(Input_x, Input_y, xContainer, yContainer);
+    //pathAtoB(Input_x, Input_y, xContainer, yContainer);
+    pathBtoA(Input_x, Input_y, xContainer, yContainer);
 
     // // Calculate PWM using PID
     if (magnet_sw == 0)
@@ -124,14 +124,14 @@ void loop()
     { // going down, PWM>0.5, Current>0
       // Serial.println(currentY + String(" here1"));
 
-      // if (abs(hoistVelocity) < 0.6) {
-      //   currentY = min(currentY + minCurrenty_down, currentLimity_down);
-      // }
-      // else {
-      //   currentY = min(currentY, currentLimity_down);
-      // }
+      if (abs(hoistVelocity) < 0.6) {
+        currentY = min(currentY + minCurrenty_down, currentLimity_down);
+      }
+      else {
+        currentY = min(currentY, currentLimity_down);
+      }
 
-      currentY = min(currentY + minCurrenty_down, currentLimity_down);
+      //currentY = min(currentY + minCurrenty_down, currentLimity_down);
 
       // Serial.println(currentY + String(" here1"));
       double PWMcurrent = (double)map(currentY * 100, currentLimity_up * 100, currentLimity_down * 100, 0.1 * 100, 0.9 * 100) / 100;
@@ -142,12 +142,12 @@ void loop()
     { // going up, PWM<0.5, Current<0
       // Serial.println(currentY + String(" here2"));
       
-      // if (abs(hoistVelocity) < 0.6) {
-      //   currentY = max(currentY + minCurrenty_up, currentLimity_up);
-      // }
-      // else {
-      //   currentY = max(currentY, currentLimity_up);
-      // }
+      if (abs(hoistVelocity) < 0.6) {
+        currentY = max(currentY + minCurrenty_up, currentLimity_up);
+      }
+      else {
+        currentY = max(currentY, currentLimity_up);
+      }
       
       currentY = max(currentY + minCurrenty_up, currentLimity_up);
       // Serial.println(currentY + String(" here2"));
@@ -155,12 +155,6 @@ void loop()
       // Serial.println(currentY + String(" here2 ") + PWMcurrent);
       analogWrite(pin_pwm_y, PWMcurrent * 255);
     }
-
-    // Serial.print(Input_y + String(";"));
-    // Serial.println(
-    //     String("Y position: ") + Input_y +
-    //     String("\t Y current: ") + Output_y +
-    //     String("\t PWM: ") + ((double)map(currentY * 100, currentLimity_up * 100, currentLimity_down * 100, 0.1 * 100, 0.9 * 100) / 100));
 
     //// X-AXIS ////
     double currentX = Output_x - Output_theta;
@@ -180,8 +174,6 @@ void loop()
     }
     else if (currentX < 0)
     { // going right, PWM<0.5
-
-      
       if (abs(trolleyVelocity) < 0.6) {
         currentX = max(currentX + minCurrentx_right, currentLimitx_right);
       }
@@ -194,68 +186,11 @@ void loop()
       analogWrite(pin_pwm_x, PWMcurrent * 255);
     }
 
-    //Serial.print(Input_x + String(";"));
-    // Serial.println(
-    //     String("Angle: ") + Input_theta +
-    //     String("\t angle current: ") + Output_theta +
-    //     String("\t X position: ") + Input_x +
-    //     String("\t X current: ") + Output_x +
-    //     String("\t Total current: ") + (Output_x + Output_theta) +
-    //     String("\t PWM: ") + ((double)map(currentX * 100, currentLimitx_right * 100, currentLimitx_left * 100, 0.1 * 100, 0.9 * 100) / 100));
-
     lastTime = time;
     // Serial.println(String("total loop time in micros: ") + (micros() - start) );
     // Serial.println(String("angle: ") + Input_theta);
-    Serial.println(String("setpoint X: ") + Setpoint_x + String(", input X: ") + Input_x + String(", setpoint Y: ") + Setpoint_y + String(", input Y: ") + Input_y + String(", angle: ") + Input_theta + String(", y raw: ") + analogRead(pin_pos_y));
+
+    //Serial.println(String("setpoint X: ") + Setpoint_x + String(", input X: ") + Input_x + String(", x raw: ") + analogRead(pin_pos_x) + String(", setpoint Y: ") + Setpoint_y + String(", input Y: ") + Input_y + String(", angle: ") + Input_theta + String(", y raw: ") + analogRead(pin_pos_y));
+    Serial.println(String("Steps: ") + step + String(", Failtime: ") + failTime);
   }
-  // if (time - lastTimeTest1 >= 20000) {
-  //   if (flag) {
-  //     Setpoint_x = 0.5;
-  //     // Serial.println("here1");
-  //   } else {
-  //     Setpoint_x = 3.5;
-  //     // Serial.println("here2");
-  //   }
-  //   flag = !flag;
-  //   lastTimeTest1 = time;
-  // }
-
-  // if (time - lastTimeTest1 >= 10000) {
-  //   if (flag) {
-  //     Setpoint_y = 1.1;
-  //     // Serial.println("here1");
-  //   } else {
-  //     Setpoint_y = 0.1;
-  //     // Serial.println("here2");
-  //   }
-  //   flag = !flag;
-  //   lastTimeTest1 = time;
-  // }
-
-  // switch (state) {
-  //   case 0:
-  //     // collectload();
-  //     Setpoint_y = 0.2;
-  //     Setpoint_x = 1;
-  //     Serial3.println("M1");  // turn on the magnet
-  //     if (millis() > (state + 1) * stateTime) {
-  //       state++;
-  //     }
-  //     break;
-  //   case 1:
-  //     newSetpoint_x(2);
-  //     if (millis() > (state + 1) * stateTime) {
-  //       state++;
-  //     }
-  //     break;
-  //   case 2:
-  //     Setpoint_y = 1.2;
-  //     if (millis() > (state + 1) * stateTime) {
-  //       dropload();
-  //       Setpoint_y = 0.2;
-  //       Setpoint_x = 1;
-  //       state = 0;
-  //     }
-  //     break;
-  // }
 }

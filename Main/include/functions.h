@@ -2,13 +2,13 @@
 #include "pinDefinitions.h"
 
 //// VARIABLES ////
-float angleOffset = -1.33;     // [deg]
+float angleOffset = -1.3529;     // [deg]
 unsigned long sampletime = 10; // [ms]
 // Define these based on values given in positionalValues() in Simple_gantry_code.ino
 int minX = 865; // left
 int maxX = 53;  // right
-int minY = 123; // ceiling
-int maxY = 967; // floor
+int minY = 20; // ceiling
+int maxY = 897; // floor
 
 // New global variables  FOR PATHING
 int step = 0;
@@ -200,17 +200,29 @@ int pathAtoB(float xPos, float yPos, float xContainer, float yContainer)
   if (step == 4)
   {
     // Serial.println("Step = 5, move downto ship and turn off electro magnet.");
-    Setpoint_y = 1.199;
-    if (yPos == 1.20)
-    {
+    Setpoint_y = 1.18;
+    if (1.10 > yPos || yPos > 1.30)
+    { // if not within position
+      failTime = millis();
+    }
+    else if (millis() > failTime + 1500)
+    { // wait 6 s before going down
       Serial3.println("M0"); // Drop load
       magnet_sw = 0;
       Setpoint_y = 0.7; // Go back up
       step = 5;
       digitalWrite(pin_enable_x, LOW);
-
-      // Serial.println("//PATH A TO B DONE!");
     }
+
+    // if (yPos == 1.20)
+    // {
+    //   Serial3.println("M0"); // Drop load
+    //   magnet_sw = 0;
+    //   Setpoint_y = 0.7; // Go back up
+    //   step = 5;
+    //   digitalWrite(pin_enable_x, LOW);
+    //   Serial.println("//PATH A TO B DONE!");
+    // }
   }
 
   return step;
